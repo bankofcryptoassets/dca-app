@@ -11,6 +11,8 @@ const planSchema = new mongoose.Schema({
   btcAmount: { type: Number, required: true },
   initialPay: { type: Number },
   totalPaid: { type: Number },
+  remainingToBePaid: { type: Number },
+  valueAccured : { type: Number },
   status: {
     type: String,
     enum: ["active", "liquidating", "inactive", "liquidated"],
