@@ -6,6 +6,7 @@ const db = require("./utils/db");
 const planRoutes = require("./routes/planRoute");
 const profileRoutes = require("./routes/profileRoute");
 const paymentRoutes = require("./routes/paymentRoute");
+const portfolioRoutes = require("./routes/portfolio");
 
 const app = express();
 app.use(bodyParser.json());
@@ -20,6 +21,7 @@ app.get("/", (req, res) => {
 app.use("/api/plan", planRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api", portfolioRoutes);
 
 app.listen(5005, () => {
   console.log("Server is running on port 5005");
