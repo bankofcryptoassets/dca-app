@@ -16,6 +16,6 @@ const ActivitySchema = new Schema({
   timestamp: { type: Date, default: Date.now },
 });
 
-const Activity = mongoose.model("Activity", ActivitySchema);
+// const Activity = mongoose.model("Activity", ActivitySchema);
 
-module.exports = Activity;
+// module.exports = Activity;

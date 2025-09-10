@@ -37,6 +37,6 @@ const planSchema = new mongoose.Schema({
   rewardsEarned: { type: Number, default: 0 },
 });
 
-const Plan = mongoose.model("Plan", planSchema);
+// const Plan = mongoose.model("Plan", planSchema);
 
-module.exports = Plan;
+// module.exports = Plan;

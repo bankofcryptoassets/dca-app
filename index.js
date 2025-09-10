@@ -7,6 +7,7 @@ const planRoutes = require("./routes/planRoute");
 const profileRoutes = require("./routes/profileRoute");
 const paymentRoutes = require("./routes/paymentRoute");
 const portfolioRoutes = require("./routes/portfolio");
+const miscRoutes = require("./routes/misc");
 
 const app = express();
 app.use(bodyParser.json());
@@ -21,6 +22,7 @@ app.get("/", (req, res) => {
 app.use("/api/plan", planRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/payment", paymentRoutes);
+app.use("/api/misc", miscRoutes);
 app.use("/api", portfolioRoutes);
 
 app.listen(5005, () => {
