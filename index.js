@@ -18,7 +18,7 @@ app.use(cors());
 db.dbConnection();
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  res.send("Hi World!");
 });
 
 app.use("/api/plan", planRoutes);
