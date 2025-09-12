@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema({
   userAddress: { type: String, required: true },
-  // farcasterId: { type: String },
+  farcasterId: { type: String },
   // username: { type: String },
   // plans: [{ type: mongoose.Types.ObjectId, ref: "Plan" }],
   plan: { type: String, enum: ["daily", "weekly"], required: true },

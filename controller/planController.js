@@ -56,7 +56,7 @@ const getPayments = async (req, res) => {
 
 const createPlan = async(req, res) => {
   try {
-    const { wallet, amount, target, planType } = req.body;
+    const { wallet, amount, target, planType, farcasterId } = req.body;
 
     if(!wallet || !isAddress(wallet)) {
       return res.status(400).json({
@@ -82,13 +82,14 @@ const createPlan = async(req, res) => {
     }
 
     const newUser = new User({
-      amount,
+      amount: Number(amount).toFixed(2),
       userAddress: wallet,
+      farcasterId,
       payments: [],
       lastPaid: null,
       plan: planType,
       planCreated: Date.now(),
-      targetAmount: target,
+      targetAmount: Number(target).toFixed(6),
       totalInvested: 0
     });
 

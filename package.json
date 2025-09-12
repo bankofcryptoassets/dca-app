@@ -15,9 +15,13 @@
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
+    "ethers": "^5.8.0",
     "express": "^5.1.0",
     "mongo": "^0.1.0",
     "mongoose": "^8.17.1",
+    "node-cron": "^4.2.1",
+    "@uniswap/sdk-core": "^7.7.2",
+    "@uniswap/smart-order-router": "^4.22.20",
     "viem": "^2.33.3"
   }
 }
