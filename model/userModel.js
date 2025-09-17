@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
   targetAmount: { type: Number, required: true },
   totalInvested: { type: Number, default: 0 },
   planCreated: { type: Date, required: true },
+  paused: { type: Boolean, required: true, default: false },
   lastPaid: { type: Date, required: false },
   payments: {type: [String]}, // will contain tx hashes
   createdAt: { type: Date, default: Date.now },

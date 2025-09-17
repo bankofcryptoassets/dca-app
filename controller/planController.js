@@ -118,6 +118,44 @@ const createPlan = async(req, res) => {
   }
 }
 
+const pausePlan = async(req, res) => {
+  try {
+    const {wallet, unpause} = req.body;
+    const result = await User.findOne({
+      userAddress: wallet
+    });
+
+    if(!result) {
+      return res.status(400).json({
+        success: false,
+        message: "invalid wallet address"
+      })
+    }
+
+    await User.updateOne(
+      {
+        userAddress: wallet
+      },
+      {
+        $set: {
+          paused: unpause ? false : true
+        }
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: `plan ${unpause ? "unpaused" : "paused"} successfully`
+    });
+  } catch (error) {
+    console.log("error while pausing/unpausing plan: ", JSON.stringify(error));
+    return res.status(500).json({
+      success: false,
+      message: "internal server error"
+    })
+  }
+}
+
 const getUser = async(req, res) => {
   try {
     const {wallet} = req.query;
@@ -146,5 +184,6 @@ module.exports = {
   getPlan,
   getPayments,
   createPlan,
-  getUser
+  getUser,
+  pausePlan
 };
