@@ -68,6 +68,9 @@ const executePayments = async (plan) => {
     console.log(wallet.address);
     for(const user of users) {
         try {
+            if(user.paused) {
+                continue;
+            }
             console.log("\n\n\n");
             console.log("trying for user: ", user.userAddress);
             const {calldata} = await generateSwapCalldata(
