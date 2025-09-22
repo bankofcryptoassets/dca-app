@@ -15,6 +15,10 @@ const userSchema = new mongoose.Schema({
   payments: { type: [String] }, // will contain tx hashes
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
+  // Referral system fields
+  referredUsers: { type: [String], default: [] }, // Array of userAddresses that this user referred
+  referredBy: { type: String, default: null }, // userAddress of the user who referred this user
+  referralClicks: { type: [String], default: [] }, // Array of userAddresses that clicked this user's referral link
   // telegramId: { type: String, default: null },
   // email: { type: String, default: null },
 })

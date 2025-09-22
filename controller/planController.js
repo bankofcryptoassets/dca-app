@@ -56,7 +56,15 @@ const getPayments = async (req, res) => {
 
 const createPlan = async (req, res) => {
   try {
-    const { wallet, amount, target, planType, farcasterId, username } = req.body
+    const {
+      wallet,
+      amount,
+      target,
+      planType,
+      farcasterId,
+      username,
+      referrerFarcasterId,
+    } = req.body
 
     if (!wallet || !isAddress(wallet)) {
       return res.status(400).json({
@@ -72,7 +80,13 @@ const createPlan = async (req, res) => {
       })
     }
 
-    console.log({ wallet, amount, target, planType })
+    console.log({
+      wallet,
+      amount,
+      target,
+      planType,
+      referrerFarcasterId,
+    })
 
     if (planType !== "daily" && planType !== "weekly") {
       return res.status(400).json({
@@ -107,6 +121,39 @@ const createPlan = async (req, res) => {
         success: false,
         message: "internal server error, could not save in db",
       })
+    }
+
+    // Handle referral logic if referral parameters are provided
+    if (wallet && referrerFarcasterId) {
+      try {
+        // Find the referring user by their farcasterId
+        const referringUser = await User.findOne({
+          farcasterId: referrerFarcasterId,
+        })
+
+        if (referringUser) {
+          await User.updateOne(
+            { userAddress: wallet },
+            {
+              $set: {
+                referredBy: referringUser.userAddress,
+                updatedAt: Date.now(),
+              },
+            }
+          )
+          // Add the new user's address to the referring user's referredUsers array
+          await User.updateOne(
+            { userAddress: referringUser.userAddress },
+            {
+              $addToSet: { referredUsers: wallet },
+              $set: { updatedAt: Date.now() },
+            }
+          )
+        }
+      } catch (referralError) {
+        console.log("Error processing referral:", referralError)
+        // Don't fail the plan creation if referral processing fails
+      }
     }
 
     return res.status(201).json({
@@ -169,10 +216,25 @@ const getUser = async (req, res) => {
 
     console.log("result: ", result)
 
+    // Calculate referral statistics
+    const successfulReferralCount = result.referredUsers
+      ? result.referredUsers.length
+      : 0
+    const referralClickCount = result.referralClicks
+      ? result.referralClicks.length
+      : 0
+
+    // Add referral statistics to the response
+    const userData = {
+      ...result.toObject(),
+      successfulReferralCount,
+      referralClickCount,
+    }
+
     return res.status(200).json({
       success: true,
       message: "user fetch successful",
-      data: result,
+      data: userData,
     })
   } catch (error) {
     console.log("error occurred while fetching user by wallet: ", error)
@@ -253,6 +315,59 @@ const updateUser = async (req, res) => {
   }
 }
 
+const trackReferralClick = async (req, res) => {
+  try {
+    const { userAddress, referrerFarcasterId } = req.body
+
+    if (!referrerFarcasterId) {
+      return res.status(400).json({
+        success: false,
+        message: "referrerFarcasterId is required",
+      })
+    }
+
+    // If userAddress is provided, validate it
+    if (userAddress && !isAddress(userAddress)) {
+      return res.status(400).json({
+        success: false,
+        message: "invalid user address",
+      })
+    }
+
+    // Find the user by farcasterId
+    const user = await User.findOne({ farcasterId: referrerFarcasterId })
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User with provided farcasterId not found",
+      })
+    }
+
+    // If userAddress is provided, add it to referralClicks array
+    if (userAddress) {
+      await User.updateOne(
+        { farcasterId: referrerFarcasterId },
+        {
+          $addToSet: { referralClicks: userAddress },
+          $set: { updatedAt: Date.now() },
+        }
+      )
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "referral click tracked successfully",
+    })
+  } catch (error) {
+    console.log("error occurred while tracking referral click: ", error)
+    return res.status(500).json({
+      success: false,
+      message: "internal server error",
+    })
+  }
+}
+
 module.exports = {
   planSummary,
   getPlan,
@@ -261,4 +376,5 @@ module.exports = {
   getUser,
   pausePlan,
   updateUser,
+  trackReferralClick,
 }

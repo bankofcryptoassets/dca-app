@@ -7,12 +7,14 @@ const {
   getUser,
   pausePlan,
   updateUser,
+  trackReferralClick,
 } = require("../controller/planController")
 
 const router = require("express").Router()
 
 router.post("/summary", planSummary)
 router.post("/createPlan", createPlan)
+router.post("/trackReferralClick", trackReferralClick)
 router.patch("/cancelPlan", pausePlan)
 router.patch("/updateUser", updateUser)
 router.get("/getUser", getUser)
