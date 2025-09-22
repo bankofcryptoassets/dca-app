@@ -8,6 +8,8 @@ const {
   pausePlan,
   updateUser,
   trackReferralClick,
+  getSharePage,
+  getLeaderboard,
 } = require("../controller/planController")
 
 const router = require("express").Router()
@@ -18,6 +20,8 @@ router.post("/trackReferralClick", trackReferralClick)
 router.patch("/cancelPlan", pausePlan)
 router.patch("/updateUser", updateUser)
 router.get("/getUser", getUser)
+router.get("/share/:farcasterId", getSharePage)
+router.get("/leaderboard", getLeaderboard)
 router.get("/:id", getPlan)
 // router.post
 

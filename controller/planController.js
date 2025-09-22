@@ -368,6 +368,107 @@ const trackReferralClick = async (req, res) => {
   }
 }
 
+const getSharePage = async (req, res) => {
+  try {
+    const { farcasterId } = req.params
+
+    if (!farcasterId) {
+      return res.status(400).json({
+        success: false,
+        message: "farcasterId is required",
+      })
+    }
+
+    const user = await User.findOne({ farcasterId })
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "user not found",
+      })
+    }
+
+    // Calculate referral statistics
+    const successfulReferralCount = user.referredUsers
+      ? user.referredUsers.length
+      : 0
+    const referralClickCount = user.referralClicks
+      ? user.referralClicks.length
+      : 0
+    const paymentsCount = user.payments ? user.payments.length : 0
+
+    // Return only selected fields to prevent doxxing
+    const shareData = {
+      username: user.username,
+      farcasterId: user.farcasterId,
+      successfulReferralCount,
+      referralClickCount,
+      btcAmount: user.targetAmount,
+      paymentsCount,
+      planCadence: user.plan,
+      totalInvested: user.totalInvested,
+      lastPaid: user.lastPaid,
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "share page data retrieved successfully",
+      data: shareData,
+    })
+  } catch (error) {
+    console.log("error occurred while fetching share page data: ", error)
+    return res.status(500).json({
+      success: false,
+      message: "internal server error",
+    })
+  }
+}
+
+const getLeaderboard = async (req, res) => {
+  try {
+    const { limit = 10 } = req.query
+
+    // Get users with referral data, sorted by referral count
+    const users = await User.find({
+      farcasterId: { $exists: true, $ne: null },
+      username: { $exists: true, $ne: null },
+    })
+      .select("username farcasterId referredUsers referralClicks targetAmount")
+      .sort({ referredUsers: -1 })
+      .limit(parseInt(limit))
+
+    // Transform data to include only selected fields and calculate counts
+    const leaderboard = users.map((user) => {
+      const successfulReferralCount = user.referredUsers
+        ? user.referredUsers.length
+        : 0
+      const referralClickCount = user.referralClicks
+        ? user.referralClicks.length
+        : 0
+
+      return {
+        username: user.username,
+        farcasterId: user.farcasterId,
+        successfulReferralCount,
+        referralClickCount,
+        btcAmount: user.targetAmount,
+      }
+    })
+
+    return res.status(200).json({
+      success: true,
+      message: "leaderboard retrieved successfully",
+      data: leaderboard,
+    })
+  } catch (error) {
+    console.log("error occurred while fetching leaderboard: ", error)
+    return res.status(500).json({
+      success: false,
+      message: "internal server error",
+    })
+  }
+}
+
 module.exports = {
   planSummary,
   getPlan,
@@ -377,4 +478,6 @@ module.exports = {
   pausePlan,
   updateUser,
   trackReferralClick,
+  getSharePage,
+  getLeaderboard,
 }
