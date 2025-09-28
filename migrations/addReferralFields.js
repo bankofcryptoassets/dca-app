@@ -50,7 +50,4 @@ const down = async () => {
   }
 }
 
-// Uncomment the line below to run the migration
-// up();
-
-module.exports = { up, down }
+// module.exports = { up, down }

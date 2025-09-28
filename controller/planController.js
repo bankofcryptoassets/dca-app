@@ -3,6 +3,7 @@ const Payment = require("../model/paymentModel")
 const Plan = require("../model/planModel")
 const User = require("../model/userModel")
 const { getBTCRate } = require("../utils/price")
+const { generateReferralId } = require("../utils/referral")
 
 const planSummary = async (req, res) => {
   const { btcAmount, initialPay, pledgedPay } = req.body
@@ -63,7 +64,7 @@ const createPlan = async (req, res) => {
       planType,
       farcasterId,
       username,
-      referrerFarcasterId,
+      referrerReferralId,
     } = req.body
 
     if (!wallet || !isAddress(wallet)) {
@@ -85,7 +86,7 @@ const createPlan = async (req, res) => {
       amount,
       target,
       planType,
-      referrerFarcasterId,
+      referrerReferralId,
     })
 
     if (planType !== "daily" && planType !== "weekly") {
@@ -95,11 +96,15 @@ const createPlan = async (req, res) => {
       })
     }
 
+    // Generate user's referralId from userAddress
+    const referralId = generateReferralId(wallet)
+
     const newUser = new User({
       amount: Number(amount).toFixed(2),
       userAddress: wallet,
       farcasterId,
       username,
+      referralId,
       payments: [],
       lastPaid: null,
       plan: planType,
@@ -124,11 +129,11 @@ const createPlan = async (req, res) => {
     }
 
     // Handle referral logic if referral parameters are provided
-    if (wallet && referrerFarcasterId) {
+    if (wallet && referrerReferralId) {
       try {
-        // Find the referring user by their farcasterId
+        // Find the referring user by their referralId
         const referringUser = await User.findOne({
-          farcasterId: referrerFarcasterId,
+          referralId: referrerReferralId,
         })
 
         if (referringUser) {
@@ -317,12 +322,12 @@ const updateUser = async (req, res) => {
 
 const trackReferralClick = async (req, res) => {
   try {
-    const { userAddress, referrerFarcasterId } = req.body
+    const { userAddress, referrerReferralId } = req.body
 
-    if (!referrerFarcasterId) {
+    if (!referrerReferralId) {
       return res.status(400).json({
         success: false,
-        message: "referrerFarcasterId is required",
+        message: "referrerReferralId is required",
       })
     }
 
@@ -334,20 +339,20 @@ const trackReferralClick = async (req, res) => {
       })
     }
 
-    // Find the user by farcasterId
-    const user = await User.findOne({ farcasterId: referrerFarcasterId })
+    // Find the user by referralId
+    const user = await User.findOne({ referralId: referrerReferralId })
 
     if (!user) {
       return res.status(404).json({
         success: false,
-        message: "User with provided farcasterId not found",
+        message: "User with provided referralId not found",
       })
     }
 
     // If userAddress is provided, add it to referralClicks array
     if (userAddress) {
       await User.updateOne(
-        { farcasterId: referrerFarcasterId },
+        { referralId: referrerReferralId },
         {
           $addToSet: { referralClicks: userAddress },
           $set: { updatedAt: Date.now() },
@@ -370,16 +375,16 @@ const trackReferralClick = async (req, res) => {
 
 const getSharePage = async (req, res) => {
   try {
-    const { farcasterId } = req.params
+    const { referralId } = req.params
 
-    if (!farcasterId) {
+    if (!referralId) {
       return res.status(400).json({
         success: false,
-        message: "farcasterId is required",
+        message: "referralId is required",
       })
     }
 
-    const user = await User.findOne({ farcasterId })
+    const user = await User.findOne({ referralId })
 
     if (!user) {
       return res.status(404).json({
@@ -400,7 +405,7 @@ const getSharePage = async (req, res) => {
     // Return only selected fields to prevent doxxing
     const shareData = {
       username: user.username,
-      farcasterId: user.farcasterId,
+      referralId: user.referralId,
       successfulReferralCount,
       referralClickCount,
       btcAmount: user.targetAmount,
@@ -430,10 +435,10 @@ const getLeaderboard = async (req, res) => {
 
     // Get users with referral data, sorted by referral count
     const users = await User.find({
-      farcasterId: { $exists: true, $ne: null },
+      referralId: { $exists: true, $ne: null },
       username: { $exists: true, $ne: null },
     })
-      .select("username farcasterId referredUsers referralClicks targetAmount")
+      .select("username referralId referredUsers referralClicks targetAmount")
       .sort({ referredUsers: -1 })
       .limit(parseInt(limit))
 
@@ -448,7 +453,7 @@ const getLeaderboard = async (req, res) => {
 
       return {
         username: user.username,
-        farcasterId: user.farcasterId,
+        referralId: user.referralId,
         successfulReferralCount,
         referralClickCount,
         btcAmount: user.targetAmount,
