@@ -219,6 +219,14 @@ const getUser = async (req, res) => {
       userAddress: wallet,
     })
 
+    if (!result) {
+      return res.status(200).json({
+        success: false,
+        message: "user not found",
+        data: null,
+      })
+    }
+
     console.log("result: ", result)
 
     // Calculate referral statistics
