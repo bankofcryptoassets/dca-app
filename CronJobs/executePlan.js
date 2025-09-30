@@ -4,6 +4,7 @@ const { getBTCRate } = require("../utils/price");
 const { DCA_ABI } = require("../abis/dca");
 const {Token, CurrencyAmount, TradeType, Percent} = require("@uniswap/sdk-core");
 const { AlphaRouter, SwapType } = require("@uniswap/smart-order-router");
+const { amplify } = require("../utils/math");
 
 
 async function generateSwapCalldata(
@@ -50,9 +51,6 @@ const executePayments = async (plan) => {
     const users = await User.find({plan});
     console.log(users);
 
-    const oneCbbtc = await getBTCRate(1);
-    console.log('\x1b[33m%s\x1b[0m', "oneCbbtc", oneCbbtc);
-
     const provider = new ethers.providers.JsonRpcProvider(
         process.env.RPC
     );
@@ -65,7 +63,6 @@ const executePayments = async (plan) => {
         DCA_ABI,
         wallet
     );
-    console.log(wallet.address);
     for(const user of users) {
         try {
             if(user.paused) {
@@ -73,21 +70,31 @@ const executePayments = async (plan) => {
             }
             console.log("\n\n\n");
             console.log("trying for user: ", user.userAddress);
-            const {calldata} = await generateSwapCalldata(
-                "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
-                ethers.utils.parseUnits(user.amount.toString(), 6).toString(),
-                "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
-                process.env.DCA_CONTRACT,
-                provider,
-                8453
-            );
+            const [calldata, gasPrice] = await Promise.all([
+                generateSwapCalldata(
+                    "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+                    ethers.utils.parseUnits(user.amount.toString(), 6).toString(),
+                    "0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf",
+                    process.env.DCA_CONTRACT,
+                    provider,
+                    8453
+                ),
+                provider.getGasPrice()
+            ]);
             console.log("calldata:: ", calldata);
             console.log("amount:: ", ethers.utils.parseUnits(user.amount.toString(), 6).toString());
+            console.log("gasPrice:: ", gasPrice, amplify(gasPrice, process.env.GAS_PRICE_MARKUP));
+            
+            const amplifiedGasPrice = amplify(gasPrice, process.env.GAS_PRICE_MARKUP);
             
             const tx = await contract.executeSwap(
-                calldata,
+                calldata.calldata,
                 user.userAddress,
-                ethers.utils.parseUnits(user.amount.toString(), 6).toString()
+                ethers.utils.parseUnits(user.amount.toString(), 6).toString(),
+                {
+                    maxFeePerGas: amplifiedGasPrice.toString(),
+                    maxPriorityFeePerGas: gasPrice.div(4).toString()
+                }
             );
             console.log("tx:: ", tx);
             const receipt = await tx.wait();
