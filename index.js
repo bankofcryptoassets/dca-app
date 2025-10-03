@@ -17,9 +17,6 @@ const app = express()
 app.use(bodyParser.json())
 app.use(cors())
 
-// Serve static files from public directory for admin panel
-app.use("/admin", express.static(path.join(__dirname, "admin")))
-
 db.dbConnection()
 
 app.get("/", (req, res) => {
@@ -32,6 +29,9 @@ app.use("/api/payment", paymentRoutes)
 app.use("/api/misc", miscRoutes)
 app.use("/api", portfolioRoutes)
 app.use("/api/notifications", notificationRoutes)
+
+// Serve static files from admin directory for admin panel
+app.use("/admin", express.static(path.join(__dirname, "admin")))
 
 app.listen(5005, () => {
   console.log("Server is running on port 5005")

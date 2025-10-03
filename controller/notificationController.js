@@ -26,8 +26,6 @@ async function handleWebhook(req, res) {
       })
     }
 
-    console.log(`Received webhook event: ${event.event} for FID: ${fid}`)
-
     switch (event.event) {
       case "miniapp_added":
         await handleMiniAppAdded(fid, event.notificationDetails)
@@ -46,7 +44,7 @@ async function handleWebhook(req, res) {
         break
 
       default:
-        console.log(`Unknown event type: ${event.event}`)
+        console.error(`Unknown event type: ${event.event}`)
     }
 
     return res.status(200).json({ success: true })
@@ -74,11 +72,9 @@ async function handleMiniAppAdded(fid, notificationDetails) {
         notificationToken: notificationDetails.token,
         enabled: true,
         miniAppAdded: true,
-        updatedAt: Date.now(),
       },
       { upsert: true, new: true }
     )
-    console.log(`Mini app added with notifications for FID: ${fid}`)
   } else {
     // User added mini app but notifications not enabled
     await UserNotification.findOneAndUpdate(
@@ -87,11 +83,9 @@ async function handleMiniAppAdded(fid, notificationDetails) {
         fid,
         miniAppAdded: true,
         enabled: false,
-        updatedAt: Date.now(),
       },
       { upsert: true, new: true }
     )
-    console.log(`Mini app added without notifications for FID: ${fid}`)
   }
 }
 
@@ -101,10 +95,8 @@ async function handleMiniAppRemoved(fid) {
     {
       miniAppAdded: false,
       enabled: false,
-      updatedAt: Date.now(),
     }
   )
-  console.log(`Mini app removed for FID: ${fid}`)
 }
 
 async function handleNotificationsEnabled(fid, notificationDetails) {
@@ -124,11 +116,9 @@ async function handleNotificationsEnabled(fid, notificationDetails) {
       notificationUrl: notificationDetails.url,
       notificationToken: notificationDetails.token,
       enabled: true,
-      updatedAt: Date.now(),
     },
     { upsert: true, new: true }
   )
-  console.log(`Notifications enabled for FID: ${fid}`)
 }
 
 async function handleNotificationsDisabled(fid) {
@@ -136,10 +126,8 @@ async function handleNotificationsDisabled(fid) {
     { fid },
     {
       enabled: false,
-      updatedAt: Date.now(),
     }
   )
-  console.log(`Notifications disabled for FID: ${fid}`)
 }
 
 /**
@@ -259,7 +247,7 @@ async function sendNotification(req, res) {
             if (result.invalidTokens && result.invalidTokens.length > 0) {
               await UserNotification.updateMany(
                 { notificationToken: { $in: result.invalidTokens } },
-                { enabled: false, updatedAt: Date.now() }
+                { enabled: false }
               )
             }
 
@@ -267,7 +255,7 @@ async function sendNotification(req, res) {
             if (result.successfulTokens && result.successfulTokens.length > 0) {
               await UserNotification.updateMany(
                 { notificationToken: { $in: result.successfulTokens } },
-                { lastNotificationSentAt: Date.now(), updatedAt: Date.now() }
+                { lastNotificationSentAt: Date.now() }
               )
             }
           } else {
