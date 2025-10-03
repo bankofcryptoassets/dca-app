@@ -141,16 +141,16 @@ const createPlan = async (req, res) => {
             { userAddress: wallet },
             {
               $set: {
-                referredBy: referringUser.userAddress,
+                referredBy: referringUser.referralId,
                 updatedAt: Date.now(),
               },
             }
           )
-          // Add the new user's address to the referring user's referredUsers array
+          // Add the new user's referralId to the referring user's referredUsers array
           await User.updateOne(
             { userAddress: referringUser.userAddress },
             {
-              $addToSet: { referredUsers: wallet },
+              $addToSet: { referredUsers: referralId },
               $set: { updatedAt: Date.now() },
             }
           )
@@ -330,7 +330,7 @@ const updateUser = async (req, res) => {
 
 const trackReferralClick = async (req, res) => {
   try {
-    const { userAddress, referrerReferralId } = req.body
+    const { farcasterId, referrerReferralId } = req.body
 
     if (!referrerReferralId) {
       return res.status(400).json({
@@ -339,11 +339,11 @@ const trackReferralClick = async (req, res) => {
       })
     }
 
-    // If userAddress is provided, validate it
-    if (userAddress && !isAddress(userAddress)) {
+    // If farcasterId is provided, validate it
+    if (farcasterId && (!farcasterId || farcasterId.trim() === "")) {
       return res.status(400).json({
         success: false,
-        message: "invalid user address",
+        message: "invalid farcasterId",
       })
     }
 
@@ -357,12 +357,12 @@ const trackReferralClick = async (req, res) => {
       })
     }
 
-    // If userAddress is provided, add it to referralClicks array
-    if (userAddress) {
+    // If farcasterId is provided, add it to referralClicks array
+    if (farcasterId) {
       await User.updateOne(
         { referralId: referrerReferralId },
         {
-          $addToSet: { referralClicks: userAddress },
+          $addToSet: { referralClicks: farcasterId },
           $set: { updatedAt: Date.now() },
         }
       )
