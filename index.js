@@ -11,6 +11,7 @@ const paymentRoutes = require("./routes/paymentRoute")
 const portfolioRoutes = require("./routes/portfolio")
 const miscRoutes = require("./routes/misc")
 const notificationRoutes = require("./routes/notificationRoute")
+const dustSweepRoutes = require("./routes/dustSweepRoute")
 const { executePayments } = require("./CronJobs/executePlan")
 
 const app = express()
@@ -29,6 +30,7 @@ app.use("/api/payment", paymentRoutes)
 app.use("/api/misc", miscRoutes)
 app.use("/api", portfolioRoutes)
 app.use("/api/notifications", notificationRoutes)
+app.use("/api/dust-sweep", dustSweepRoutes)
 
 // Serve static files from admin directory for admin panel
 app.use("/admin", express.static(path.join(__dirname, "admin")))
