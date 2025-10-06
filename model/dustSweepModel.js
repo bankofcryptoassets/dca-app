@@ -16,11 +16,43 @@ const dustSweepSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    // Basic info about the sweep
-    assetsSwept: {
-      type: Number,
-      required: true,
-    },
+    // Detailed asset information
+    assetsSwept: [
+      {
+        symbol: {
+          type: String,
+          required: true,
+        },
+        name: {
+          type: String,
+          required: true,
+        },
+        address: {
+          type: String,
+          required: true,
+        },
+        amount: {
+          type: String,
+          required: true,
+        },
+        usdValue: {
+          type: Number,
+          required: true,
+        },
+        cbbtcValue: {
+          type: Number,
+          required: true,
+        },
+        decimals: {
+          type: Number,
+          required: true,
+        },
+        chainId: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     cbbtcReceived: {
       type: Number,
       required: true,

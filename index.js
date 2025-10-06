@@ -33,7 +33,10 @@ app.use("/api/notifications", notificationRoutes)
 app.use("/api/dust-sweep", dustSweepRoutes)
 
 // Serve static files from admin directory for admin panel
-app.use("/admin", express.static(path.join(__dirname, "admin")))
+app.use(
+  "/admin/notifications",
+  express.static("assets/admin/notifications.html")
+)
 
 app.listen(5005, () => {
   console.log("Server is running on port 5005")

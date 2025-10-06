@@ -18,6 +18,8 @@ const recordDustSweepTransaction = async (req, res) => {
       !userAddress ||
       !transactionHash ||
       !assetsSwept ||
+      !Array.isArray(assetsSwept) ||
+      assetsSwept.length === 0 ||
       !cbbtcReceived ||
       !usdValue
     ) {
@@ -180,7 +182,6 @@ const updateDustSweepStatus = async (req, res) => {
 }
 
 module.exports = {
-  getDustSweepablePortfolio,
   recordDustSweepTransaction,
   getDustSweepHistory,
   updateDustSweepStatus,
