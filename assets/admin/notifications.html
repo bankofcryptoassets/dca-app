@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notification Admin - DCA App</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      .header {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        color: #333;
+        margin-bottom: 10px;
+      }
+
+      .header p {
+        color: #666;
+      }
+
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .stat-card h3 {
+        color: #666;
+        font-size: 14px;
+        font-weight: 500;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .stat-card .number {
+        color: #667eea;
+        font-size: 36px;
+        font-weight: bold;
+      }
+
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+      }
+
+      .card {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      }
+
+      .card h2 {
+        color: #333;
+        margin-bottom: 20px;
+        font-size: 24px;
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      label {
+        display: block;
+        color: #555;
+        font-weight: 500;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      input,
+      textarea {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.3s;
+      }
+
+      input:focus,
+      textarea:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+
+      textarea {
+        resize: vertical;
+        min-height: 80px;
+      }
+
+      .char-count {
+        text-align: right;
+        font-size: 12px;
+        color: #999;
+        margin-top: 5px;
+      }
+
+      .button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 14px 28px;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s, box-shadow 0.2s;
+        width: 100%;
+      }
+
+      .button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(102, 126, 234, 0.4);
+      }
+
+      .button:active {
+        transform: translateY(0);
+      }
+
+      .button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .alert {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+
+      .alert.success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+
+      .alert.error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .alert.show {
+        display: block;
+      }
+
+      .notifications-list {
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .notification-item {
+        padding: 20px;
+        border: 2px solid #f0f0f0;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        transition: border-color 0.3s;
+      }
+
+      .notification-item:hover {
+        border-color: #667eea;
+      }
+
+      .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 10px;
+      }
+
+      .notification-title {
+        font-weight: 600;
+        color: #333;
+        font-size: 16px;
+      }
+
+      .notification-date {
+        color: #999;
+        font-size: 12px;
+      }
+
+      .notification-body {
+        color: #666;
+        margin-bottom: 10px;
+        font-size: 14px;
+      }
+
+      .notification-stats {
+        display: flex;
+        gap: 15px;
+        font-size: 13px;
+        color: #666;
+      }
+
+      .notification-stats span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .badge {
+        background: #667eea;
+        color: white;
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+      }
+
+      .badge.success {
+        background: #28a745;
+      }
+
+      .badge.warning {
+        background: #ffc107;
+      }
+
+      .badge.error {
+        background: #dc3545;
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: #999;
+      }
+
+      .spinner {
+        border: 3px solid #f3f3f3;
+        border-top: 3px solid #667eea;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 15px;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      @media (max-width: 968px) {
+        .main-content {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔔 Notification Admin Panel</h1>
+        <p>Send notifications to your Farcaster mini app users</p>
+      </div>
+
+      <div class="stats" id="stats">
+        <div class="stat-card">
+          <h3>Total Users</h3>
+          <div class="number" id="totalUsers">-</div>
+        </div>
+        <div class="stat-card">
+          <h3>Enabled Users</h3>
+          <div class="number" id="enabledUsers">-</div>
+        </div>
+        <div class="stat-card">
+          <h3>Notifications Sent</h3>
+          <div class="number" id="totalNotifications">-</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Clicks</h3>
+          <div class="number" id="totalClicks">-</div>
+        </div>
+      </div>
+
+      <div class="main-content">
+        <div class="card">
+          <h2>📨 Send Notification</h2>
+
+          <div id="sendAlert" class="alert"></div>
+
+          <form id="notificationForm">
+            <div class="form-group">
+              <label for="title">Title *</label>
+              <input
+                type="text"
+                id="title"
+                name="title"
+                placeholder="Enter notification title"
+                maxlength="32"
+                required
+              />
+              <div class="char-count">
+                <span id="titleCount">0</span>/32 characters
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="body">Body *</label>
+              <textarea
+                id="body"
+                name="body"
+                placeholder="Enter notification message"
+                maxlength="128"
+                required
+              ></textarea>
+              <div class="char-count">
+                <span id="bodyCount">0</span>/128 characters
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="targetUrl">Target URL *</label>
+              <input
+                type="url"
+                id="targetUrl"
+                name="targetUrl"
+                placeholder="https://your-app.com/page"
+                required
+              />
+              <div class="char-count">
+                URL where users will be directed when clicking the notification
+              </div>
+            </div>
+
+            <button type="submit" class="button" id="sendButton">
+              Send to All Users
+            </button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2>📋 Recent Notifications</h2>
+
+          <div id="notificationsList" class="notifications-list">
+            <div class="loading">
+              <div class="spinner"></div>
+              Loading notifications...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const API_BASE = window.location.origin + "/api/notifications"
+      let authCredentials = null
+
+      // Character counters
+      document.getElementById("title").addEventListener("input", (e) => {
+        document.getElementById("titleCount").textContent =
+          e.target.value.length
+      })
+
+      document.getElementById("body").addEventListener("input", (e) => {
+        document.getElementById("bodyCount").textContent = e.target.value.length
+      })
+
+      // Prompt for authentication
+      function promptAuth() {
+        if (!authCredentials) {
+          const username = prompt("Enter admin username:")
+          const password = prompt("Enter admin password:")
+          if (username && password) {
+            authCredentials = btoa(`${username}:${password}`)
+          } else {
+            return false
+          }
+        }
+        return true
+      }
+
+      // Show alert message
+      function showAlert(message, type = "success") {
+        const alert = document.getElementById("sendAlert")
+        alert.textContent = message
+        alert.className = `alert ${type} show`
+        setTimeout(() => {
+          alert.className = "alert"
+        }, 5000)
+      }
+
+      // Fetch with auth
+      async function fetchWithAuth(url, options = {}) {
+        if (!promptAuth()) {
+          throw new Error("Authentication required")
+        }
+
+        const headers = {
+          ...options.headers,
+          Authorization: `Basic ${authCredentials}`,
+          "Content-Type": "application/json",
+        }
+
+        const response = await fetch(url, { ...options, headers })
+
+        if (response.status === 401) {
+          authCredentials = null
+          alert("Authentication failed. Please try again.")
+          return fetchWithAuth(url, options)
+        }
+
+        return response
+      }
+
+      // Load statistics
+      async function loadStats() {
+        try {
+          const response = await fetchWithAuth(`${API_BASE}/stats`)
+          const data = await response.json()
+
+          if (data.success) {
+            document.getElementById("totalUsers").textContent =
+              data.stats.totalUsers
+            document.getElementById("enabledUsers").textContent =
+              data.stats.enabledUsers
+            document.getElementById("totalNotifications").textContent =
+              data.stats.totalNotificationsSent
+            document.getElementById("totalClicks").textContent =
+              data.stats.totalClicks
+          }
+        } catch (error) {
+          console.error("Error loading stats:", error)
+        }
+      }
+
+      // Load notifications
+      async function loadNotifications() {
+        try {
+          const response = await fetchWithAuth(`${API_BASE}/list?limit=10`)
+          const data = await response.json()
+
+          const container = document.getElementById("notificationsList")
+
+          if (data.success && data.data.length > 0) {
+            container.innerHTML = data.data
+              .map((notification) => {
+                const date = new Date(notification.sentAt).toLocaleString()
+                const clickRate =
+                  notification.successfulCount > 0
+                    ? (
+                        (notification.clickCount /
+                          notification.successfulCount) *
+                        100
+                      ).toFixed(1)
+                    : 0
+
+                return `
+                            <div class="notification-item">
+                                <div class="notification-header">
+                                    <div class="notification-title">${
+                                      notification.title
+                                    }</div>
+                                    <div class="notification-date">${date}</div>
+                                </div>
+                                <div class="notification-body">${
+                                  notification.body
+                                }</div>
+                                <div class="notification-stats">
+                                    <span>
+                                        <span class="badge success">${
+                                          notification.successfulCount
+                                        } sent</span>
+                                    </span>
+                                    <span>
+                                        <span class="badge">${
+                                          notification.clickCount
+                                        } clicks</span>
+                                    </span>
+                                    ${
+                                      notification.failedCount > 0
+                                        ? `<span class="badge error">${notification.failedCount} failed</span>`
+                                        : ""
+                                    }
+                                    ${
+                                      notification.rateLimitedCount > 0
+                                        ? `<span class="badge warning">${notification.rateLimitedCount} limited</span>`
+                                        : ""
+                                    }
+                                    <span style="margin-left: auto;">
+                                        ${clickRate}% click rate
+                                    </span>
+                                </div>
+                            </div>
+                        `
+              })
+              .join("")
+          } else {
+            container.innerHTML =
+              '<div class="loading">No notifications sent yet</div>'
+          }
+        } catch (error) {
+          console.error("Error loading notifications:", error)
+          document.getElementById("notificationsList").innerHTML =
+            '<div class="loading">Error loading notifications</div>'
+        }
+      }
+
+      // Send notification
+      document
+        .getElementById("notificationForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault()
+
+          const button = document.getElementById("sendButton")
+          const formData = new FormData(e.target)
+          const data = {
+            title: formData.get("title"),
+            body: formData.get("body"),
+            targetUrl: formData.get("targetUrl"),
+          }
+
+          button.disabled = true
+          button.textContent = "Sending..."
+
+          try {
+            const response = await fetchWithAuth(`${API_BASE}/send`, {
+              method: "POST",
+              body: JSON.stringify(data),
+            })
+
+            const result = await response.json()
+
+            if (result.success) {
+              showAlert(
+                `✅ Notification sent successfully! ${result.results.successful} delivered, ${result.results.failed} failed.`,
+                "success"
+              )
+              e.target.reset()
+              document.getElementById("titleCount").textContent = "0"
+              document.getElementById("bodyCount").textContent = "0"
+
+              // Reload stats and notifications
+              loadStats()
+              loadNotifications()
+            } else {
+              showAlert(`❌ Error: ${result.error}`, "error")
+            }
+          } catch (error) {
+            showAlert(`❌ Error: ${error.message}`, "error")
+          } finally {
+            button.disabled = false
+            button.textContent = "Send to All Users"
+          }
+        })
+
+      // Load data on page load
+      loadStats()
+      loadNotifications()
+
+      // Refresh data every 30 seconds
+      setInterval(() => {
+        loadStats()
+        loadNotifications()
+      }, 30000)
+    </script>
+  </body>
+</html>
