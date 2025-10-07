@@ -1,49 +1,8 @@
 const User = require("../model/userModel");
 const {Wallet, ethers, Contract} = require("ethers");
-const { getBTCRate } = require("../utils/price");
 const { DCA_ABI } = require("../abis/dca");
-const {Token, CurrencyAmount, TradeType, Percent} = require("@uniswap/sdk-core");
-const { AlphaRouter, SwapType } = require("@uniswap/smart-order-router");
 const { amplify } = require("../utils/math");
-
-
-async function generateSwapCalldata(
-    fromTokenAddress,
-    amount,          // input amount in token decimals, e.g. '1000000000000000000' for 1 ETH
-    toTokenAddress,
-    recipient,       // the receiver address
-    provider, // Ethers provider
-    chainId          // e.g., 1 for mainnet
-) {
-    // Construct Token objects (you need token decimals)
-    const fromToken = new Token(chainId, fromTokenAddress, 6); // update decimals accordingly
-    const toToken = new Token(chainId, toTokenAddress, 8);      // update decimals accordingly
-    const router = new AlphaRouter({ chainId, provider });
-    const amountIn = CurrencyAmount.fromRawAmount(fromToken, amount);
-    const route = await router.route(
-        amountIn,
-        toToken,
-        TradeType.EXACT_INPUT,
-        {
-            type: SwapType.SWAP_ROUTER_02,
-            recipient,
-            slippageTolerance: new Percent(5, 100), // 5%
-            deadline: Math.floor(Date.now() / 1000 + 1800), // 30 min deadline
-        }
-    );
-
-    if (!route || !route.methodParameters) throw new Error("No route loaded");
-
-    console.log("swap calldata generated");
-    console.log("route: ", route);
-
-    // Outputs: calldata and value for swap
-    return {
-        to: route.methodParameters.to,
-        calldata: route.methodParameters.calldata,
-        value: route.methodParameters.value
-    };
-}
+const { generateSwapCalldata } = require("../utils/generateSwapCalldata");
 
 const executePayments = async (plan) => {
     // get all users.
