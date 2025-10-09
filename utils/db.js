@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+const { combinedLogger } = require("./logger");
 
 dotenv.config();
 
@@ -9,9 +10,12 @@ const dbConnection = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log("Database connected successfully");
+    combinedLogger.info("Database connected successfully");
   } catch (error) {
-    console.error("Database connection failed:", error);
+    combinedLogger.error(
+      "Database connection failed: " +
+      JSON.stringify(error, Object.getOwnPropertyNames(error))
+    );
   }
 };
 
