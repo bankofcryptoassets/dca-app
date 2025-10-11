@@ -1,7 +1,9 @@
 const User = require("../model/userModel")
+const { combinedLogger } = require("../utils/logger")
 
 const up = async () => {
   try {
+    combinedLogger.info("Starting migration: adding referral fields to User collection")
     const res = await User.updateMany(
       {},
       {
@@ -12,14 +14,12 @@ const up = async () => {
         },
       }
     )
-    console.log(
-      "migration successful, added referral fields to User collection"
+    combinedLogger.info(
+      `Migration successful, added referral fields to ${res.modifiedCount} users`
     )
-    console.log(res)
   } catch (error) {
-    console.log(
-      "error while updating users collection:: ",
-      JSON.stringify(error)
+    combinedLogger.error(
+      `Error while updating users collection: ${error.message}`
     )
     throw error
   }
@@ -27,6 +27,7 @@ const up = async () => {
 
 const down = async () => {
   try {
+    combinedLogger.info("Starting rollback: removing referral fields from User collection")
     const res = await User.updateMany(
       {},
       {
@@ -37,14 +38,12 @@ const down = async () => {
         },
       }
     )
-    console.log(
-      "migration successful, removed referral fields from User collection"
+    combinedLogger.info(
+      `Rollback successful, removed referral fields from ${res.modifiedCount} users`
     )
-    console.log(res)
   } catch (error) {
-    console.log(
-      "error while updating users collection:: ",
-      JSON.stringify(error)
+    combinedLogger.error(
+      `Error while updating users collection: ${error.message}`
     )
     throw error
   }

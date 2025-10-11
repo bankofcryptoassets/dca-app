@@ -2,6 +2,7 @@ const { ethers } = require("ethers");
 const { getBTCRate } = require("../utils/price");
 const { provider } = require("../utils/provider");
 const { EAC_AGG_PROXY_ABI } = require("../abis/eacAggregatorProxy");
+const { combinedLogger } = require("../utils/logger");
 
 const getBtcExchangeRate = async (_, res) => {
     try {
@@ -33,7 +34,7 @@ const getBtcExchangeRate = async (_, res) => {
             }
         });
     } catch (error) {
-        console.log("error occurred while fetching btc price: ", error);
+        combinedLogger.error(`Error occurred while fetching btc price: ${error.message}`);
         return res.status(500).json({
             success: false,
             message: "internal server error"

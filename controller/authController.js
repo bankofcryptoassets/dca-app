@@ -4,12 +4,13 @@ const AppError = require("../utils/appError");
 const { createPublicClient, http } = require("viem");
 const { parseSiweMessage } = require("viem/siwe");
 const { baseSepolia } = require("viem/chains");
+const { combinedLogger } = require("../utils/logger");
 dotenv.config();
 
 const User = require("../model/userModel");
 
 exports.getNonce = async (req, res, next) => {
-  console.log("REQUEST");
+  combinedLogger.info("Nonce request received");
   // Generate a more secure nonce for SIWE
   const { generateSiweNonce } = require("viem/siwe");
   const nonce = generateSiweNonce();
@@ -20,7 +21,7 @@ exports.getNonce = async (req, res, next) => {
     expiresIn: "1h",
   });
 
-  console.log("tempToken: ", tempToken);
+  combinedLogger.debug("Temp token generated for address");
 
   res.status(200).json({
     status: "success",
@@ -40,7 +41,7 @@ exports.verifyUser = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWTSECRET);
 
-    console.log("decoded: ", decoded);
+    combinedLogger.debug("JWT token decoded successfully");
     const signature = req.body.signature;
     const accessToken = req.body.accessToken || null;
 
@@ -92,9 +93,7 @@ exports.verifyUser = async (req, res, next) => {
       { expiresIn: "1d" }
     );
 
-    console.log("/////////////////////////////////");
-    console.log("WalletIsVirgin: ", walletIsVirgin);
-    console.log("/////////////////////////////////");
+    combinedLogger.info(`User authenticated successfully: ${userAddress}`);
 
     res.status(200).json({
       status: "success",
@@ -103,7 +102,7 @@ exports.verifyUser = async (req, res, next) => {
       walletIsVirgin: walletIsVirgin,
     });
   } catch (error) {
-    console.error("Authentication error:", error);
+    combinedLogger.error(`Authentication error: ${error.message}`);
     return next(new AppError(error.message || "Authentication failed", 403));
   }
 };
@@ -114,8 +113,6 @@ exports.seralizeUser = async (req, _res, next) => {
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWTSECRET);
-
-      console.log("decoded: ", decoded);
 
       const user = await User.findById(decoded.id);
       req.user = user;
@@ -150,13 +147,15 @@ exports.telegramLogin = async (req, res, next) => {
     }
     user.telegramId = telegramId;
     await user.save();
+    combinedLogger.info(`Telegram ID linked for user: ${user._id}`);
+
     res.status(200).json({
       status: "success",
       message: "Telegram ID linked successfully",
       user: user,
     });
   } catch (error) {
-    console.error("Error linking Telegram ID:", error);
+    combinedLogger.error(`Error linking Telegram ID: ${error.message}`);
     return next(new AppError("Failed to link Telegram ID", 500));
   }
 };

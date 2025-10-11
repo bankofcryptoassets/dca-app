@@ -2,6 +2,7 @@ const UserNotification = require("../model/userNotificationModel")
 const NotificationLog = require("../model/notificationLogModel")
 const crypto = require("crypto")
 const { parseWebhookData } = require("../utils/parseWebhookData")
+const { combinedLogger } = require("../utils/logger")
 
 /**
  * Handle webhook events from Farcaster
@@ -47,12 +48,12 @@ async function handleWebhook(req, res) {
         break
 
       default:
-        console.error(`Unknown event type: ${event.event}`)
+        combinedLogger.warn(`Unknown event type: ${event.event}`)
     }
 
     return res.status(200).json({ success: true })
   } catch (error) {
-    console.error("Webhook handler error:", error)
+    combinedLogger.error(`Webhook handler error: ${error.message}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -108,7 +109,7 @@ async function handleNotificationsEnabled(fid, notificationDetails) {
     !notificationDetails.token ||
     !notificationDetails.url
   ) {
-    console.error(`Invalid notification details for FID: ${fid}`)
+    combinedLogger.error(`Invalid notification details for FID: ${fid}`)
     return
   }
 
@@ -387,13 +388,15 @@ async function sendNotification(req, res) {
               )
             }
           } else {
-            console.error(
+            combinedLogger.error(
               `Failed to send notification batch: ${response.status}`
             )
             failedCount += tokens.length
           }
         } catch (error) {
-          console.error(`Error sending notification batch:`, error)
+          combinedLogger.error(
+            `Error sending notification batch: ${error.message}`
+          )
           failedCount += urlRecipients.length
         }
       }
@@ -421,7 +424,7 @@ async function sendNotification(req, res) {
       },
     })
   } catch (error) {
-    console.error("Send notification error:", error)
+    combinedLogger.error(`Send notification error: ${error.message}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -455,7 +458,7 @@ async function getNotifications(req, res) {
       },
     })
   } catch (error) {
-    console.error("Get notifications error:", error)
+    combinedLogger.error(`Get notifications error: ${error.message}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -499,7 +502,7 @@ async function trackNotificationClick(req, res) {
 
     return res.status(200).json({ success: true })
   } catch (error) {
-    console.error("Track notification click error:", error)
+    combinedLogger.error(`Track notification click error: ${error.message}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -531,7 +534,7 @@ async function getNotificationStats(req, res) {
       },
     })
   } catch (error) {
-    console.error("Get notification stats error:", error)
+    combinedLogger.error(`Get notification stats error: ${error.message}`)
     return res.status(500).json({
       success: false,
       error: error.message,

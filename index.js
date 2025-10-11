@@ -5,6 +5,7 @@ const cron = require("node-cron")
 const path = require("path")
 
 const db = require("./utils/db")
+const { combinedLogger } = require("./utils/logger")
 const planRoutes = require("./routes/planRoute")
 const profileRoutes = require("./routes/profileRoute")
 const paymentRoutes = require("./routes/paymentRoute")
@@ -39,7 +40,7 @@ app.use(
 )
 
 app.listen(5005, () => {
-  console.log("Server is running on port 5005")
+  combinedLogger.info("Server is running on port 5005")
 })
 
 // trigger crons

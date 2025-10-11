@@ -1,7 +1,9 @@
 const User = require("../model/userModel");
+const { combinedLogger } = require("../utils/logger");
 
 const up = async () => {
     try {
+        combinedLogger.info("Starting migration: adding paused field to User collection");
         const res = await User.updateMany(
             {},
             {
@@ -10,16 +12,16 @@ const up = async () => {
                 }
             }
         );
-        console.log("migration successful, added paused field to User collection");
-        console.log(res);
+        combinedLogger.info(`Migration successful, added paused field to ${res.modifiedCount} users`);
     } catch (error) {
-        console.log("error while updating users collection:: ", JSON.stringify(error));
+        combinedLogger.error(`Error while updating users collection: ${error.message}`);
         throw error;
     }
 }
 
 const down = async () => {
     try {
+        combinedLogger.info("Starting rollback: removing paused field from User collection");
         const res = await User.updateMany(
             {},
             {
@@ -28,10 +30,9 @@ const down = async () => {
                 }
             }
         );
-        console.log("migration successful, removed paused field from User collection");
-        console.log(res);
+        combinedLogger.info(`Rollback successful, removed paused field from ${res.modifiedCount} users`);
     } catch (error) {
-        console.log("error while updating users collection:: ", JSON.stringify(error));
+        combinedLogger.error(`Error while updating users collection: ${error.message}`);
         throw error;
     }
 }

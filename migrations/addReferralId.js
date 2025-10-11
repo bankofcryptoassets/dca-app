@@ -1,13 +1,14 @@
 const User = require("../model/userModel")
 const { generateReferralId } = require("../utils/referral")
+const { combinedLogger } = require("../utils/logger")
 
 const up = async () => {
   try {
-    console.log("Starting referralId migration...")
+    combinedLogger.info("Starting referralId migration...")
 
     // Get all users without referralId
     const users = await User.find({ referralId: { $exists: false } })
-    console.log(`Found ${users.length} users without referralId`)
+    combinedLogger.info(`Found ${users.length} users without referralId`)
 
     for (const user of users) {
       try {
@@ -19,7 +20,7 @@ const up = async () => {
           existingUser &&
           existingUser._id.toString() !== user._id.toString()
         ) {
-          console.log(
+          combinedLogger.warn(
             `ReferralId collision detected for ${user.userAddress}, generating alternative...`
           )
           // Generate with 7 characters instead of 6 to avoid collision
@@ -32,20 +33,19 @@ const up = async () => {
           await User.updateOne({ _id: user._id }, { $set: { referralId } })
         }
 
-        console.log(
+        combinedLogger.debug(
           `Generated referralId ${referralId} for user ${user.userAddress}`
         )
       } catch (error) {
-        console.error(`Error processing user ${user.userAddress}:`, error)
+        combinedLogger.error(`Error processing user ${user.userAddress}: ${error.message}`)
         continue
       }
     }
 
-    console.log("Migration completed successfully!")
+    combinedLogger.info("Migration completed successfully!")
   } catch (error) {
-    console.log(
-      "error while adding referralId to users collection:: ",
-      JSON.stringify(error)
+    combinedLogger.error(
+      `Error while adding referralId to users collection: ${error.message}`
     )
     throw error
   }
@@ -53,6 +53,7 @@ const up = async () => {
 
 const down = async () => {
   try {
+    combinedLogger.info("Starting rollback: removing referralId field from User collection")
     const res = await User.updateMany(
       {},
       {
@@ -61,14 +62,12 @@ const down = async () => {
         },
       }
     )
-    console.log(
-      "migration successful, removed referralId field from User collection"
+    combinedLogger.info(
+      `Rollback successful, removed referralId field from ${res.modifiedCount} users`
     )
-    console.log(res)
   } catch (error) {
-    console.log(
-      "error while updating users collection:: ",
-      JSON.stringify(error)
+    combinedLogger.error(
+      `Error while updating users collection: ${error.message}`
     )
     throw error
   }
