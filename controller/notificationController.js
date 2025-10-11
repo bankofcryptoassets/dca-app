@@ -241,7 +241,7 @@ async function sendNotification(req, res) {
           })
 
           if (response.ok) {
-            const result = await response.json()
+            const result = (await response.json())?.result
             successfulCount += result.successfulTokens?.length || 0
             rateLimitedCount += result.rateLimitedTokens?.length || 0
             failedCount += result.invalidTokens?.length || 0
