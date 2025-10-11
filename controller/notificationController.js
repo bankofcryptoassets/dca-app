@@ -1,7 +1,6 @@
 const UserNotification = require("../model/userNotificationModel")
 const NotificationLog = require("../model/notificationLogModel")
 const crypto = require("crypto")
-const { combinedLogger } = require("../utils/logger")
 
 /**
  * Handle webhook events from Farcaster
@@ -11,16 +10,7 @@ async function handleWebhook(req, res) {
   try {
     const webhookData = req.body
 
-    combinedLogger.info(
-      "handleWebhook --- Webhook data: " +
-        JSON.stringify(webhookData, Object.getOwnPropertyNames(webhookData))
-    )
-
     if (!webhookData || !webhookData.event) {
-      combinedLogger.error(
-        "handleWebhook --- Invalid webhook data: " +
-          JSON.stringify(webhookData, Object.getOwnPropertyNames(webhookData))
-      )
       return res.status(400).json({
         success: false,
         error: "Invalid webhook data",
@@ -30,10 +20,6 @@ async function handleWebhook(req, res) {
     const { fid, event } = webhookData
 
     if (!fid) {
-      combinedLogger.error(
-        "handleWebhook --- Missing fid in webhook data: " +
-          JSON.stringify(webhookData, Object.getOwnPropertyNames(webhookData))
-      )
       return res.status(400).json({
         success: false,
         error: "Missing fid in webhook data",
@@ -58,18 +44,12 @@ async function handleWebhook(req, res) {
         break
 
       default:
-        combinedLogger.error(
-          `handleWebhook --- Unknown event type: ${event.event} ` +
-            JSON.stringify(webhookData, Object.getOwnPropertyNames(webhookData))
-        )
+        console.error(`Unknown event type: ${event.event}`)
     }
 
     return res.status(200).json({ success: true })
   } catch (error) {
-    combinedLogger.error(
-      "handleWebhook --- Webhook handler error: " +
-        JSON.stringify(error, Object.getOwnPropertyNames(error))
-    )
+    console.error("Webhook handler error:", error)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -78,13 +58,6 @@ async function handleWebhook(req, res) {
 }
 
 async function handleMiniAppAdded(fid, notificationDetails) {
-  combinedLogger.info(
-    "handleWebhook --- Handling mini app added: " +
-      JSON.stringify(
-        { fid, notificationDetails },
-        Object.getOwnPropertyNames({ fid, notificationDetails })
-      )
-  )
   if (
     notificationDetails &&
     notificationDetails.token &&
@@ -117,7 +90,6 @@ async function handleMiniAppAdded(fid, notificationDetails) {
 }
 
 async function handleMiniAppRemoved(fid) {
-  combinedLogger.info(`handleWebhook --- Handling mini app removed: ${fid}`)
   await UserNotification.findOneAndUpdate(
     { fid },
     {
@@ -128,25 +100,12 @@ async function handleMiniAppRemoved(fid) {
 }
 
 async function handleNotificationsEnabled(fid, notificationDetails) {
-  combinedLogger.info(
-    "handleWebhook --- Handling notifications enabled: " +
-      JSON.stringify(
-        { fid, notificationDetails },
-        Object.getOwnPropertyNames({ fid, notificationDetails })
-      )
-  )
   if (
     !notificationDetails ||
     !notificationDetails.token ||
     !notificationDetails.url
   ) {
-    combinedLogger.error(
-      `handleWebhook --- Invalid notification details for FID: ${fid}` +
-        JSON.stringify(
-          notificationDetails,
-          Object.getOwnPropertyNames(notificationDetails)
-        )
-    )
+    console.error(`Invalid notification details for FID: ${fid}`)
     return
   }
 
@@ -163,9 +122,6 @@ async function handleNotificationsEnabled(fid, notificationDetails) {
 }
 
 async function handleNotificationsDisabled(fid) {
-  combinedLogger.info(
-    `handleWebhook --- Handling notifications disabled: ${fid}`
-  )
   await UserNotification.findOneAndUpdate(
     { fid },
     {
@@ -180,10 +136,6 @@ async function handleNotificationsDisabled(fid) {
 async function sendNotification(req, res) {
   try {
     const { title, body, targetUrl, recipientFids } = req.body
-    combinedLogger.info(
-      "sendNotification --- Sending notification: " +
-        JSON.stringify(req.body, Object.getOwnPropertyNames(req.body))
-    )
 
     // Validation
     if (!title || title.length > 32) {
