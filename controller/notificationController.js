@@ -1,6 +1,7 @@
 const UserNotification = require("../model/userNotificationModel")
 const NotificationLog = require("../model/notificationLogModel")
 const crypto = require("crypto")
+const { parseWebhookData } = require("../utils/parseWebhookData")
 
 /**
  * Handle webhook events from Farcaster
@@ -8,7 +9,7 @@ const crypto = require("crypto")
  */
 async function handleWebhook(req, res) {
   try {
-    const webhookData = req.body
+    const webhookData = parseWebhookData(req.body)
 
     if (!webhookData || !webhookData.event) {
       return res.status(400).json({
@@ -28,10 +29,12 @@ async function handleWebhook(req, res) {
 
     switch (event.event) {
       case "miniapp_added":
+      case "frame_added":
         await handleMiniAppAdded(fid, event.notificationDetails)
         break
 
       case "miniapp_removed":
+      case "frame_removed":
         await handleMiniAppRemoved(fid)
         break
 
