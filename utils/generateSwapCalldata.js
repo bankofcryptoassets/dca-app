@@ -27,10 +27,15 @@ const generateSwapCalldata = async (
     deadline: Math.floor(Date.now() / 1000 + 1800), // 30 min deadline
   })
 
-  if (!route || !route.methodParameters) throw new Error("No route loaded")
+  if (!route || !route.methodParameters) {
+    combinedLogger.error(
+      "generateSwapCalldata -- route: " +
+        JSON.stringify(route, Object.getOwnPropertyNames(route))
+    )
+    throw new Error("No route loaded")
+  }
 
-  console.log("swap calldata generated")
-  console.log("route: ", route)
+  combinedLogger.info("generateSwapCalldata -- swap calldata generated")
 
   // Outputs: calldata and value for swap
   return {

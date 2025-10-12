@@ -1,5 +1,7 @@
 const DustSweep = require("../model/dustSweepModel")
 const { ethers } = require("ethers")
+const { combinedLogger } = require("../utils/logger")
+const { generateSwapCalldata } = require("../utils/generateSwapCalldata")
 
 /**
  * Record a successful dust sweep transaction
@@ -185,7 +187,12 @@ const updateDustSweepStatus = async (req, res) => {
 /**
  * Generate swap calldata for dust sweep
  */
-const generateSwapCalldata = async (req, res) => {
+const getSwapCalldata = async (req, res) => {
+  combinedLogger.info(
+    "getSwapCalldata -- Generating swap calldata for dust sweep: " +
+      JSON.stringify(req.body, Object.getOwnPropertyNames(req.body))
+  )
+
   try {
     const {
       fromTokenAddress,
@@ -204,6 +211,10 @@ const generateSwapCalldata = async (req, res) => {
       !recipient ||
       !chainId
     ) {
+      combinedLogger.error(
+        "getSwapCalldata -- Missing required fields: " +
+          JSON.stringify(req.body, Object.getOwnPropertyNames(req.body))
+      )
       return res.status(400).json({
         success: false,
         message: "Missing required fields",
@@ -224,7 +235,10 @@ const generateSwapCalldata = async (req, res) => {
 
     return res.status(200).json({ success: true, data })
   } catch (error) {
-    console.error("Failed to generate swap calldata:", error)
+    combinedLogger.error(
+      "getSwapCalldata -- Failed to generate swap calldata: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
     return res.status(500).json({
       success: false,
       message: error.message || "Unknown error",
@@ -236,5 +250,5 @@ module.exports = {
   recordDustSweepTransaction,
   getDustSweepHistory,
   updateDustSweepStatus,
-  generateSwapCalldata,
+  getSwapCalldata,
 }

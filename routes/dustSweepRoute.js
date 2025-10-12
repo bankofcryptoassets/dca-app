@@ -4,7 +4,7 @@ const {
   recordDustSweepTransaction,
   getDustSweepHistory,
   updateDustSweepStatus,
-  generateSwapCalldata,
+  getSwapCalldata,
 } = require("../controller/dustSweepController")
 
 // Record a dust sweep transaction
@@ -17,6 +17,6 @@ router.get("/history", getDustSweepHistory)
 router.patch("/transaction/:transactionHash", updateDustSweepStatus)
 
 // Generate swap calldata for dust sweep
-router.post("/generate-swap-calldata", generateSwapCalldata)
+router.post("/generate-swap-calldata", getSwapCalldata)
 
 module.exports = router
