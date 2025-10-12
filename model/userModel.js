@@ -6,6 +6,10 @@ const userSchema = new mongoose.Schema(
     userAddress: { type: String, required: true },
     farcasterId: { type: String },
     username: { type: String },
+    displayName: { type: String },
+    pfpUrl: { type: String },
+    clientFid: { type: String },
+    clientPlatformType: { type: String },
     // telegramId: { type: String, default: null },
     // email: { type: String, default: null },
 

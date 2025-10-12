@@ -64,6 +64,10 @@ const createPlan = async (req, res) => {
       planType,
       farcasterId,
       username,
+      displayName,
+      pfpUrl,
+      clientFid,
+      clientPlatformType,
       referrerReferralId,
     } = req.body
 
@@ -104,6 +108,10 @@ const createPlan = async (req, res) => {
       userAddress: wallet,
       farcasterId,
       username,
+      displayName,
+      pfpUrl,
+      clientFid,
+      clientPlatformType,
       referralId,
       payments: [],
       lastPaid: null,
@@ -258,7 +266,15 @@ const getUser = async (req, res) => {
 
 const updateUser = async (req, res) => {
   try {
-    const { wallet, farcasterId, username } = req.body
+    const {
+      wallet,
+      farcasterId,
+      username,
+      displayName,
+      pfpUrl,
+      clientFid,
+      clientPlatformType,
+    } = req.body
 
     if (!wallet || !isAddress(wallet)) {
       return res.status(400).json({
@@ -267,10 +283,17 @@ const updateUser = async (req, res) => {
       })
     }
 
-    if (!farcasterId && !username) {
+    if (
+      !farcasterId &&
+      !username &&
+      !displayName &&
+      !pfpUrl &&
+      !clientFid &&
+      !clientPlatformType
+    ) {
       return res.status(400).json({
         success: false,
-        message: "farcasterId or username is required",
+        message: "at least one field is required",
       })
     }
 
@@ -295,6 +318,26 @@ const updateUser = async (req, res) => {
     // Only update username if it doesn't exist and is provided
     if (username && !user.username) {
       updateData.username = username
+    }
+
+    // Only update displayName if it doesn't exist and is provided
+    if (displayName && !user.displayName) {
+      updateData.displayName = displayName
+    }
+
+    // Only update pfpUrl if it doesn't exist and is provided
+    if (pfpUrl && !user.pfpUrl) {
+      updateData.pfpUrl = pfpUrl
+    }
+
+    // Only update clientFid if it doesn't exist and is provided
+    if (clientFid && !user.clientFid) {
+      updateData.clientFid = clientFid
+    }
+
+    // Only update clientPlatformType if it doesn't exist and is provided
+    if (clientPlatformType && !user.clientPlatformType) {
+      updateData.clientPlatformType = clientPlatformType
     }
 
     // If no fields to update, return success
@@ -411,6 +454,8 @@ const getSharePage = async (req, res) => {
     // Return only selected fields to prevent doxxing
     const shareData = {
       username: user.username,
+      displayName: user.displayName,
+      pfpUrl: user.pfpUrl,
       referralId: user.referralId,
       successfulReferralCount,
       referralClickCount,
@@ -444,7 +489,9 @@ const getLeaderboard = async (req, res) => {
       referralId: { $exists: true, $ne: null },
       username: { $exists: true, $ne: null },
     })
-      .select("username referralId referredUsers referralClicks targetAmount")
+      .select(
+        "username displayName pfpUrl referralId referredUsers referralClicks targetAmount"
+      )
       .sort({ referredUsers: -1 })
       .limit(parseInt(limit))
 
@@ -459,6 +506,8 @@ const getLeaderboard = async (req, res) => {
 
       return {
         username: user.username,
+        displayName: user.displayName,
+        pfpUrl: user.pfpUrl,
         referralId: user.referralId,
         successfulReferralCount,
         referralClickCount,
