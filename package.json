@@ -12,7 +12,6 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-    "@farcaster/miniapp-node": "^0.1.9",
     "@uniswap/sdk-core": "^7.7.2",
     "@uniswap/smart-order-router": "^4.22.20",
     "axios": "^1.11.0",
