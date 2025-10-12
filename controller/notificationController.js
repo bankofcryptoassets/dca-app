@@ -134,6 +134,131 @@ async function handleNotificationsDisabled(fid) {
 }
 
 /**
+ * Get user notification details by FID
+ */
+async function getUserNotifications(req, res) {
+  try {
+    const { fid } = req.params
+
+    if (!fid) {
+      return res.status(400).json({
+        success: false,
+        error: "FID is required",
+      })
+    }
+
+    const userNotification = await UserNotification.findOne({
+      fid: parseInt(fid),
+    })
+
+    if (!userNotification) {
+      return res.status(404).json({
+        success: false,
+        error: "User notification not found",
+      })
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: userNotification,
+    })
+  } catch (error) {
+    console.error("Get user notifications error:", error)
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    })
+  }
+}
+
+/**
+ * Update user notification details by FID
+ */
+async function updateUserNotifications(req, res) {
+  try {
+    const { fid } = req.params
+    const { notificationUrl, notificationToken, enabled, miniAppAdded } =
+      req.body
+
+    if (!fid) {
+      return res.status(400).json({
+        success: false,
+        error: "FID is required",
+      })
+    }
+
+    if (
+      !notificationUrl &&
+      !notificationToken &&
+      enabled === undefined &&
+      miniAppAdded === undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        error: "At least one field is required",
+      })
+    }
+
+    const userNotification = await UserNotification.findOne({
+      fid: parseInt(fid),
+    })
+
+    if (!userNotification) {
+      return res.status(404).json({
+        success: false,
+        error: "User notification not found",
+      })
+    }
+
+    const updateData = {}
+
+    // Only update fields that are provided
+    if (notificationUrl !== undefined) {
+      updateData.notificationUrl = notificationUrl
+    }
+
+    if (notificationToken !== undefined) {
+      updateData.notificationToken = notificationToken
+    }
+
+    if (enabled !== undefined) {
+      updateData.enabled = enabled
+    }
+
+    if (miniAppAdded !== undefined) {
+      updateData.miniAppAdded = miniAppAdded
+    }
+
+    // If no fields to update, return success
+    if (Object.keys(updateData).length === 0) {
+      return res.status(200).json({
+        success: true,
+        message: "No updates needed",
+        data: userNotification,
+      })
+    }
+
+    const updatedUserNotification = await UserNotification.findOneAndUpdate(
+      { fid: parseInt(fid) },
+      { $set: updateData },
+      { new: true }
+    )
+
+    return res.status(200).json({
+      success: true,
+      message: "User notification updated successfully",
+      data: updatedUserNotification,
+    })
+  } catch (error) {
+    console.error("Update user notifications error:", error)
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    })
+  }
+}
+
+/**
  * Send a notification to multiple users
  */
 async function sendNotification(req, res) {
@@ -416,6 +541,8 @@ async function getNotificationStats(req, res) {
 
 module.exports = {
   handleWebhook,
+  getUserNotifications,
+  updateUserNotifications,
   sendNotification,
   getNotifications,
   trackNotificationClick,
