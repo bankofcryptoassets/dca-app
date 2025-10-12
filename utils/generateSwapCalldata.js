@@ -5,6 +5,7 @@ const {
   Percent,
 } = require("@uniswap/sdk-core")
 const { AlphaRouter, SwapType } = require("@uniswap/smart-order-router")
+const { combinedLogger } = require("../utils/logger")
 
 const generateSwapCalldata = async (
   fromTokenAddress,
