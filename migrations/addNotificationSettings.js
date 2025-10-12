@@ -6,14 +6,16 @@ const up = async () => {
       {},
       {
         $set: {
-          referredUsers: [],
-          referredBy: null,
-          referralClicks: 0,
+          notificationSettings: {
+            purchaseConfirmations: true,
+            lackOfFunds: true,
+            milestonesAchieved: true,
+          },
         },
       }
     )
     console.log(
-      "migration successful, added referral fields to User collection"
+      "migration successful, added notification settings to User collection"
     )
     console.log(res)
   } catch (error) {
@@ -31,14 +33,12 @@ const down = async () => {
       {},
       {
         $unset: {
-          referredUsers: "",
-          referredBy: "",
-          referralClicks: "",
+          notificationSettings: "",
         },
       }
     )
     console.log(
-      "migration successful, removed referral fields from User collection"
+      "migration successful, removed notification settings from User collection"
     )
     console.log(res)
   } catch (error) {
@@ -50,4 +50,4 @@ const down = async () => {
   }
 }
 
-// module.exports = { up, down }
+module.exports = { up, down }
