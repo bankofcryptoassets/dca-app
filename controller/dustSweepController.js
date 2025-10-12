@@ -221,7 +221,7 @@ const getSwapCalldata = async (req, res) => {
       })
     }
 
-    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL)
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC)
 
     const data = await generateSwapCalldata(
       fromTokenAddress,
