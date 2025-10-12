@@ -29,6 +29,13 @@ const userSchema = new mongoose.Schema(
     referredUsers: { type: [String], default: [] }, // Array of referralIds that this user referred
     referredBy: { type: String, default: null }, // referralId of the user who referred this user
     referralClicks: { type: Number, default: 0 }, // Number of clicks on this user's referral link
+
+    // Notification settings
+    notificationSettings: {
+      purchaseConfirmations: { type: Boolean, default: true },
+      lackOfFunds: { type: Boolean, default: true },
+      milestonesAchieved: { type: Boolean, default: true },
+    },
   },
   {
     timestamps: true,

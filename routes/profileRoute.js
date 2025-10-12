@@ -1,11 +1,19 @@
 // Get User
 // Get activity logs
 
-const { getUser, getActivity } = require("../controller/profileController");
+const {
+  getUser,
+  getActivity,
+  getNotificationSettings,
+  updateNotificationSettings,
+} = require("../controller/profileController")
 
-const router = require("express").Router();
+const router = require("express").Router()
 
-router.get("/:id", getUser);
-router.get("/activity/:id", getActivity);
+router.get("/:id", getUser)
+router.get("/activity/:id", getActivity)
 
-module.exports = router;
+router.get("/notification-settings/:id", getNotificationSettings)
+router.put("/notification-settings/:id", updateNotificationSettings)
+
+module.exports = router
