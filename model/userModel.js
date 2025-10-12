@@ -28,7 +28,7 @@ const userSchema = new mongoose.Schema(
     referralId: { type: String, unique: true, required: true }, // Unique referral ID generated from userAddress
     referredUsers: { type: [String], default: [] }, // Array of referralIds that this user referred
     referredBy: { type: String, default: null }, // referralId of the user who referred this user
-    referralClicks: { type: [String], default: [] }, // Array of farcasterIds that clicked this user's referral link
+    referralClicks: { type: Number, default: 0 }, // Number of clicks on this user's referral link
   },
   {
     timestamps: true,

@@ -8,7 +8,7 @@ const up = async () => {
         $set: {
           referredUsers: [],
           referredBy: null,
-          referralClicks: [],
+          referralClicks: 0,
         },
       }
     )

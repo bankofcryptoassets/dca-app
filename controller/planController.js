@@ -239,9 +239,7 @@ const getUser = async (req, res) => {
     const successfulReferralCount = result.referredUsers
       ? result.referredUsers.length
       : 0
-    const referralClickCount = result.referralClicks
-      ? result.referralClicks.length
-      : 0
+    const referralClickCount = result.referralClicks || 0
 
     // Add referral statistics to the response
     const userData = {
@@ -371,21 +369,12 @@ const updateUser = async (req, res) => {
 
 const trackReferralClick = async (req, res) => {
   try {
-    // TODO: remove facasterId and keep referralClicks as a number instead only
-    const { farcasterId, referrerReferralId } = req.body
+    const { referrerReferralId } = req.body
 
     if (!referrerReferralId) {
       return res.status(400).json({
         success: false,
         message: "referrerReferralId is required",
-      })
-    }
-
-    // If farcasterId is provided, validate it
-    if (farcasterId && (!farcasterId || farcasterId.trim() === "")) {
-      return res.status(400).json({
-        success: false,
-        message: "invalid farcasterId",
       })
     }
 
@@ -399,15 +388,13 @@ const trackReferralClick = async (req, res) => {
       })
     }
 
-    // If farcasterId is provided, add it to referralClicks array
-    if (farcasterId) {
-      await User.updateOne(
-        { referralId: referrerReferralId },
-        {
-          $addToSet: { referralClicks: farcasterId },
-        }
-      )
-    }
+    // Increment referralClicks count
+    await User.updateOne(
+      { referralId: referrerReferralId },
+      {
+        $inc: { referralClicks: 1 },
+      }
+    )
 
     return res.status(200).json({
       success: true,
@@ -446,9 +433,7 @@ const getSharePage = async (req, res) => {
     const successfulReferralCount = user.referredUsers
       ? user.referredUsers.length
       : 0
-    const referralClickCount = user.referralClicks
-      ? user.referralClicks.length
-      : 0
+    const referralClickCount = user.referralClicks || 0
     const paymentsCount = user.payments ? user.payments.length : 0
 
     // Return only selected fields to prevent doxxing
@@ -500,9 +485,7 @@ const getLeaderboard = async (req, res) => {
       const successfulReferralCount = user.referredUsers
         ? user.referredUsers.length
         : 0
-      const referralClickCount = user.referralClicks
-        ? user.referralClicks.length
-        : 0
+      const referralClickCount = user.referralClicks || 0
 
       return {
         username: user.username,
