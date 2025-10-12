@@ -1,4 +1,5 @@
 const DustSweep = require("../model/dustSweepModel")
+const { ethers } = require("ethers")
 
 /**
  * Record a successful dust sweep transaction
@@ -181,8 +182,59 @@ const updateDustSweepStatus = async (req, res) => {
   }
 }
 
+/**
+ * Generate swap calldata for dust sweep
+ */
+const generateSwapCalldata = async (req, res) => {
+  try {
+    const {
+      fromTokenAddress,
+      amount,
+      toTokenAddress,
+      recipient,
+      chainId,
+      fromTokenDecimals = 18,
+    } = req.body
+
+    // Validate required fields
+    if (
+      !fromTokenAddress ||
+      !amount ||
+      !toTokenAddress ||
+      !recipient ||
+      !chainId
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required fields",
+      })
+    }
+
+    const provider = new ethers.providers.JsonRpcProvider(process.env.RPC_URL)
+
+    const data = await generateSwapCalldata(
+      fromTokenAddress,
+      amount,
+      toTokenAddress,
+      recipient,
+      provider,
+      chainId,
+      fromTokenDecimals
+    )
+
+    return res.status(200).json({ success: true, data })
+  } catch (error) {
+    console.error("Failed to generate swap calldata:", error)
+    return res.status(500).json({
+      success: false,
+      message: error.message || "Unknown error",
+    })
+  }
+}
+
 module.exports = {
   recordDustSweepTransaction,
   getDustSweepHistory,
   updateDustSweepStatus,
+  generateSwapCalldata,
 }
