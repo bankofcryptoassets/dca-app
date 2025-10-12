@@ -106,30 +106,30 @@ const executePayments = async (plan) => {
         )
       } catch {}
 
-      // Check for milestone achievements (25%, 50%, 75%, 100%)
-      try {
-        const milestonePercentages = [25, 50, 75, 100]
-        const targetAmount = user.targetAmount
-        const progressPercentage = (newTotalInvested / targetAmount) * 100
+      // TODO: Check for milestone achievements (25%, 50%, 75%, 100%)
+      // try {
+      //   const milestonePercentages = [25, 50, 75, 100]
+      //   const targetAmount = user.targetAmount
+      //   const progressPercentage = (newTotalInvested / targetAmount) * 100
 
-        // Check if user just crossed any milestone
-        const previousProgressPercentage = user.totalInvested
-          ? (user.totalInvested / targetAmount) * 100
-          : 0
+      //   // Check if user just crossed any milestone
+      //   const previousProgressPercentage = user.totalInvested
+      //     ? (user.totalInvested / targetAmount) * 100
+      //     : 0
 
-        for (const milestone of milestonePercentages) {
-          if (
-            previousProgressPercentage < milestone &&
-            progressPercentage >= milestone
-          ) {
-            await sendMilestoneAchievedNotification(
-              user.userAddress,
-              milestone,
-              newTotalInvested
-            )
-          }
-        }
-      } catch {}
+      //   for (const milestone of milestonePercentages) {
+      //     if (
+      //       previousProgressPercentage < milestone &&
+      //       progressPercentage >= milestone
+      //     ) {
+      //       await sendMilestoneAchievedNotification(
+      //         user.userAddress,
+      //         milestone,
+      //         newTotalInvested
+      //       )
+      //     }
+      //   }
+      // } catch {}
     } catch (error) {
       combinedLogger.info(
         "executePayments -- plan execution failed for wallet: " +
