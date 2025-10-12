@@ -142,7 +142,6 @@ const createPlan = async (req, res) => {
             {
               $set: {
                 referredBy: referringUser.referralId,
-                updatedAt: Date.now(),
               },
             }
           )
@@ -151,7 +150,6 @@ const createPlan = async (req, res) => {
             { userAddress: referringUser.userAddress },
             {
               $addToSet: { referredUsers: referralId },
-              $set: { updatedAt: Date.now() },
             }
           )
         }
@@ -330,6 +328,7 @@ const updateUser = async (req, res) => {
 
 const trackReferralClick = async (req, res) => {
   try {
+    // TODO: remove facasterId and keep referralClicks as a number instead only
     const { farcasterId, referrerReferralId } = req.body
 
     if (!referrerReferralId) {
@@ -363,7 +362,6 @@ const trackReferralClick = async (req, res) => {
         { referralId: referrerReferralId },
         {
           $addToSet: { referralClicks: farcasterId },
-          $set: { updatedAt: Date.now() },
         }
       )
     }
