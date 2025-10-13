@@ -1,5 +1,6 @@
 const { isAddress } = require("viem")
 const { get } = require("../utils/axios")
+const { combinedLogger } = require("../utils/logger")
 
 const filterDustSweepableBalances = (portfolioData) => {
   // Logic to flag dust sweepable balances set true when usd equivalent is less than threshold
@@ -31,8 +32,6 @@ const filterDustSweepableBalances = (portfolioData) => {
 }
 
 const getWalletPortfolio = async (req, res) => {
-  console.log("query params:: ", req.query)
-
   const { wallet } = req.query
 
   if (!wallet || !isAddress(wallet)) {
@@ -45,7 +44,12 @@ const getWalletPortfolio = async (req, res) => {
       Authorization: `${process.env.MOBULA_API_KEY}`,
     },
   }).catch((error) => {
-    console.error("Error fetching portfolio data:", error)
+    combinedLogger.error(
+      `Error fetching portfolio data: ${JSON.stringify(
+        error,
+        Object.getOwnPropertyNames(error)
+      )}`
+    )
     return error
   })
 

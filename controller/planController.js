@@ -4,6 +4,7 @@ const Plan = require("../model/planModel")
 const User = require("../model/userModel")
 const { getBTCRate } = require("../utils/price")
 const { generateReferralId } = require("../utils/referral")
+const { combinedLogger } = require("../utils/logger")
 
 const planSummary = async (req, res) => {
   const { btcAmount, initialPay, pledgedPay } = req.body
@@ -85,13 +86,7 @@ const createPlan = async (req, res) => {
       })
     }
 
-    console.log({
-      wallet,
-      amount,
-      target,
-      planType,
-      referrerReferralId,
-    })
+    combinedLogger.info(`Creating plan for wallet: ${wallet}, plan type: ${planType}`)
 
     if (planType !== "daily" && planType !== "weekly") {
       return res.status(400).json({
@@ -122,9 +117,8 @@ const createPlan = async (req, res) => {
     })
 
     const ret = await newUser.save().catch((err) => {
-      console.log(
-        "error occurred while saving user to db: ",
-        JSON.stringify(err)
+      combinedLogger.error(
+        `Error occurred while saving user to db: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`
       )
       return err
     })
@@ -135,6 +129,8 @@ const createPlan = async (req, res) => {
         message: "internal server error, could not save in db",
       })
     }
+
+    combinedLogger.info(`New user created successfully for wallet: ${wallet}`)
 
     // Handle referral logic if referral parameters are provided
     if (wallet && referrerReferralId) {
@@ -162,7 +158,7 @@ const createPlan = async (req, res) => {
           )
         }
       } catch (referralError) {
-        console.log("Error processing referral:", referralError)
+        combinedLogger.error(`Error processing referral: ${JSON.stringify(referralError, Object.getOwnPropertyNames(referralError))}`)
         // Don't fail the plan creation if referral processing fails
       }
     }
@@ -172,7 +168,7 @@ const createPlan = async (req, res) => {
       message: "new user created",
     })
   } catch (error) {
-    console.log("error occurred while creating plan: ", JSON.stringify(error))
+    combinedLogger.error(`Error occurred while creating plan: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -205,12 +201,14 @@ const pausePlan = async (req, res) => {
       }
     )
 
+    combinedLogger.info(`Plan ${unpause ? "unpaused" : "paused"} for wallet: ${wallet}`)
+
     return res.status(200).json({
       success: true,
       message: `plan ${unpause ? "unpaused" : "paused"} successfully`,
     })
   } catch (error) {
-    console.log("error while pausing/unpausing plan: ", JSON.stringify(error))
+    combinedLogger.error(`Error while pausing/unpausing plan: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -233,8 +231,6 @@ const getUser = async (req, res) => {
       })
     }
 
-    console.log("result: ", result)
-
     // Calculate referral statistics
     const successfulReferralCount = result.referredUsers
       ? result.referredUsers.length
@@ -254,7 +250,7 @@ const getUser = async (req, res) => {
       data: userData,
     })
   } catch (error) {
-    console.log("error occurred while fetching user by wallet: ", error)
+    combinedLogger.error(`Error occurred while fetching user by wallet: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "could not find user",
@@ -359,7 +355,7 @@ const updateUser = async (req, res) => {
       data: updatedUser,
     })
   } catch (error) {
-    console.log("error occurred while updating user: ", error)
+    combinedLogger.error(`Error occurred while updating user: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -401,7 +397,7 @@ const trackReferralClick = async (req, res) => {
       message: "referral click tracked successfully",
     })
   } catch (error) {
-    console.log("error occurred while tracking referral click: ", error)
+    combinedLogger.error(`Error occurred while tracking referral click: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -457,7 +453,7 @@ const getSharePage = async (req, res) => {
       data: shareData,
     })
   } catch (error) {
-    console.log("error occurred while fetching share page data: ", error)
+    combinedLogger.error(`Error occurred while fetching share page data: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -504,7 +500,7 @@ const getLeaderboard = async (req, res) => {
       data: leaderboard,
     })
   } catch (error) {
-    console.log("error occurred while fetching leaderboard: ", error)
+    combinedLogger.error(`Error occurred while fetching leaderboard: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",

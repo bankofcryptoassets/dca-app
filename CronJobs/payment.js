@@ -1,10 +1,11 @@
 const Plan = require("../model/planModel");
 const Payment = require("../model/paymentModel");
+const { combinedLogger } = require("../utils/logger");
 
 // Replace with actual ethers/web3 contract instance
 const contract = {
   async payment(userAddress, amount) {
-    console.log(
+    combinedLogger.debug(
       `Simulating contract.payment for ${userAddress}, amount: ${amount}`
     );
     // Example with ethers:
@@ -45,14 +46,14 @@ async function processPayments() {
       nextPayment: { $gte: todayStart, $lt: tomorrowStart },
     });
 
-    console.log(`Found ${duePlans.length} plans due today.`);
+    combinedLogger.info(`Found ${duePlans.length} plans due today`);
 
     for (const plan of duePlans) {
       try {
         // Idempotency guard: if lastPayment is already today, skip
         if (plan.lastPayment && isSameDay(plan.lastPayment, todayStart)) {
-          console.log(
-            `Skipping Plan ${plan.planId} — already processed today.`
+          combinedLogger.warn(
+            `Skipping Plan ${plan.planId} — already processed today`
           );
           continue;
         }
@@ -79,16 +80,16 @@ async function processPayments() {
         plan.streak = (plan.streak || 0) + 1;
 
         await plan.save();
-        console.log(`✅ Processed Plan ${plan.planId}`);
+        combinedLogger.info(`Processed Plan ${plan.planId} successfully`);
       } catch (err) {
-        console.error(`❌ Error processing Plan ${plan.planId}:`, err);
+        combinedLogger.error(`Error processing Plan ${plan.planId}: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
       }
     }
 
-    console.log("🎉 Finished processing today's payments.");
+    combinedLogger.info("Finished processing today's payments");
     process.exit(0);
   } catch (err) {
-    console.error("Fatal error:", err);
+    combinedLogger.error(`Fatal error in processPayments: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
     process.exit(1);
   }
 }

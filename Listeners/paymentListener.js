@@ -4,6 +4,7 @@ const { ethers } = require("ethers");
 const Plan = require("../model/planModel");
 const Payment = require("../model/paymentModel");
 const { getBTCRate } = require("../utils/price");
+const { combinedLogger } = require("../utils/logger");
 
 // Optional envs
 const TOKEN_DECIMALS = Number(process.env.TOKEN_DECIMALS || 8);
@@ -14,7 +15,7 @@ const DEFAULT_TOKEN = process.env.DEFAULT_TOKEN || "USDC";
  */
 const recordPaymentEvents = async () => {
   const blockNumber = await provider.getBlockNumber();
-  console.log(`Latest block number: ${blockNumber}`);
+  combinedLogger.info(`Latest block number: ${blockNumber}`);
 
   const fromBlock = Math.max(blockNumber - 100, 0);
 
@@ -25,13 +26,13 @@ const recordPaymentEvents = async () => {
       blockNumber
     );
 
-    console.log(`Found ${paymentEvents.length} Payment events`);
+    combinedLogger.info(`Found ${paymentEvents.length} Payment events`);
 
     for (const event of paymentEvents) {
       await processPaymentEvent(event);
     }
   } catch (error) {
-    console.error("Error recording payment events:", error);
+    combinedLogger.error(`Error recording payment events: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
   }
 };
 
@@ -58,21 +59,21 @@ const processPaymentEvent = async (event) => {
     }
     const token = tokenFromEvent || DEFAULT_TOKEN;
 
-    console.log(
+    combinedLogger.debug(
       `Processing Payment: planId=${planId}, user=${user}, amount=${amount} ${token}, paymentId=${paymentId}`
     );
 
     // Idempotency: skip if payment already recorded
     const existing = await Payment.findOne({ paymentId }).lean();
     if (existing) {
-      console.log(`Payment ${paymentId} already processed. Skipping.`);
+      combinedLogger.warn(`Payment ${paymentId} already processed. Skipping`);
       return;
     }
 
     // Locate matching plan
     const plan = await Plan.findOne({ planId, userAddress: user });
     if (!plan) {
-      console.error(`Plan not found for planId=${planId}, user=${user}`);
+      combinedLogger.error(`Plan not found for planId=${planId}, user=${user}`);
       return;
     }
 
@@ -105,11 +106,11 @@ const processPaymentEvent = async (event) => {
 
     await plan.save();
 
-    console.log(
+    combinedLogger.info(
       `Marked payment ${paymentId} for Plan ${plan.planId}. New streak=${plan.streak}, totalPaid=${plan.totalPaid}`
     );
   } catch (error) {
-    console.error("Error processing Payment event:", error);
+    combinedLogger.error(`Error processing Payment event: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
   }
 };
 
