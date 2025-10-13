@@ -14,7 +14,7 @@ const up = async () => {
         );
         combinedLogger.info(`Migration successful, added paused field to ${res.modifiedCount} users`);
     } catch (error) {
-        combinedLogger.error(`Error while updating users collection: ${error.message}`);
+        combinedLogger.error(`Error while updating users collection: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
         throw error;
     }
 }
@@ -32,7 +32,7 @@ const down = async () => {
         );
         combinedLogger.info(`Rollback successful, removed paused field from ${res.modifiedCount} users`);
     } catch (error) {
-        combinedLogger.error(`Error while updating users collection: ${error.message}`);
+        combinedLogger.error(`Error while updating users collection: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
         throw error;
     }
 }

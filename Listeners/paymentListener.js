@@ -32,7 +32,7 @@ const recordPaymentEvents = async () => {
       await processPaymentEvent(event);
     }
   } catch (error) {
-    combinedLogger.error(`Error recording payment events: ${error.message}`);
+    combinedLogger.error(`Error recording payment events: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
   }
 };
 
@@ -110,7 +110,7 @@ const processPaymentEvent = async (event) => {
       `Marked payment ${paymentId} for Plan ${plan.planId}. New streak=${plan.streak}, totalPaid=${plan.totalPaid}`
     );
   } catch (error) {
-    combinedLogger.error(`Error processing Payment event: ${error.message}`);
+    combinedLogger.error(`Error processing Payment event: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
   }
 };
 

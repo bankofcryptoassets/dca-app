@@ -67,7 +67,7 @@ const recordDustSweepTransaction = async (req, res) => {
     )
   } catch (error) {
     combinedLogger.error(
-      `Error in recordDustSweepTransaction: ${error.message}`
+      `Error in recordDustSweepTransaction: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
     )
     return res.status(500).json({
       success: false,
@@ -134,7 +134,7 @@ const getDustSweepHistory = async (req, res) => {
       },
     })
   } catch (error) {
-    combinedLogger.error(`Error in getDustSweepHistory: ${error.message}`)
+    combinedLogger.error(`Error in getDustSweepHistory: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "Internal server error",
@@ -181,7 +181,7 @@ const updateDustSweepStatus = async (req, res) => {
       data: updatedTransaction,
     })
   } catch (error) {
-    combinedLogger.error(`Error in updateDustSweepStatus: ${error.message}`)
+    combinedLogger.error(`Error in updateDustSweepStatus: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "Internal server error",

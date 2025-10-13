@@ -44,7 +44,12 @@ const getWalletPortfolio = async (req, res) => {
       Authorization: `${process.env.MOBULA_API_KEY}`,
     },
   }).catch((error) => {
-    combinedLogger.error(`Error fetching portfolio data: ${error.message}`)
+    combinedLogger.error(
+      `Error fetching portfolio data: ${JSON.stringify(
+        error,
+        Object.getOwnPropertyNames(error)
+      )}`
+    )
     return error
   })
 

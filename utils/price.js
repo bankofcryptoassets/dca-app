@@ -10,7 +10,7 @@ const getBTCRate = async (amount) => {
     combinedLogger.debug(`BTC Price: ${response.data.convertedPrice}`);
     return response.data.convertedPrice;
   } catch (error) {
-    combinedLogger.error(`Error fetching BTC rate: ${error.message}`);
+    combinedLogger.error(`Error fetching BTC rate: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
   }
 };
 
@@ -21,7 +21,7 @@ const getUSDRate = async (amount) => {
     combinedLogger.debug(`USD Rate: ${response.data.convertedPrice}`);
     return response.data.convertedPrice;
   } catch (error) {
-    combinedLogger.error(`Error fetching USD rate: ${error.message}`);
+    combinedLogger.error(`Error fetching USD rate: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
   }
 };
 

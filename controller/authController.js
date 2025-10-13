@@ -102,7 +102,7 @@ exports.verifyUser = async (req, res, next) => {
       walletIsVirgin: walletIsVirgin,
     });
   } catch (error) {
-    combinedLogger.error(`Authentication error: ${error.message}`);
+    combinedLogger.error(`Authentication error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
     return next(new AppError(error.message || "Authentication failed", 403));
   }
 };
@@ -155,7 +155,7 @@ exports.telegramLogin = async (req, res, next) => {
       user: user,
     });
   } catch (error) {
-    combinedLogger.error(`Error linking Telegram ID: ${error.message}`);
+    combinedLogger.error(`Error linking Telegram ID: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
     return next(new AppError("Failed to link Telegram ID", 500));
   }
 };

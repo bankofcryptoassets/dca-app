@@ -34,7 +34,7 @@ const getBtcExchangeRate = async (_, res) => {
             }
         });
     } catch (error) {
-        combinedLogger.error(`Error occurred while fetching btc price: ${error.message}`);
+        combinedLogger.error(`Error occurred while fetching btc price: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
         return res.status(500).json({
             success: false,
             message: "internal server error"

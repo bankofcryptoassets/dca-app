@@ -53,7 +53,7 @@ async function handleWebhook(req, res) {
 
     return res.status(200).json({ success: true })
   } catch (error) {
-    combinedLogger.error(`Webhook handler error: ${error.message}`)
+    combinedLogger.error(`Webhook handler error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -424,7 +424,7 @@ async function sendNotification(req, res) {
       },
     })
   } catch (error) {
-    combinedLogger.error(`Send notification error: ${error.message}`)
+    combinedLogger.error(`Send notification error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -458,7 +458,7 @@ async function getNotifications(req, res) {
       },
     })
   } catch (error) {
-    combinedLogger.error(`Get notifications error: ${error.message}`)
+    combinedLogger.error(`Get notifications error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -502,7 +502,7 @@ async function trackNotificationClick(req, res) {
 
     return res.status(200).json({ success: true })
   } catch (error) {
-    combinedLogger.error(`Track notification click error: ${error.message}`)
+    combinedLogger.error(`Track notification click error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       error: error.message,
@@ -534,7 +534,7 @@ async function getNotificationStats(req, res) {
       },
     })
   } catch (error) {
-    combinedLogger.error(`Get notification stats error: ${error.message}`)
+    combinedLogger.error(`Get notification stats error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       error: error.message,

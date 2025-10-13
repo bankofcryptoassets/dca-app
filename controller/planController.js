@@ -118,7 +118,7 @@ const createPlan = async (req, res) => {
 
     const ret = await newUser.save().catch((err) => {
       combinedLogger.error(
-        `Error occurred while saving user to db: ${err.message}`
+        `Error occurred while saving user to db: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`
       )
       return err
     })
@@ -158,7 +158,7 @@ const createPlan = async (req, res) => {
           )
         }
       } catch (referralError) {
-        combinedLogger.error(`Error processing referral: ${referralError.message}`)
+        combinedLogger.error(`Error processing referral: ${JSON.stringify(referralError, Object.getOwnPropertyNames(referralError))}`)
         // Don't fail the plan creation if referral processing fails
       }
     }
@@ -168,7 +168,7 @@ const createPlan = async (req, res) => {
       message: "new user created",
     })
   } catch (error) {
-    combinedLogger.error(`Error occurred while creating plan: ${error.message}`)
+    combinedLogger.error(`Error occurred while creating plan: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -208,7 +208,7 @@ const pausePlan = async (req, res) => {
       message: `plan ${unpause ? "unpaused" : "paused"} successfully`,
     })
   } catch (error) {
-    combinedLogger.error(`Error while pausing/unpausing plan: ${error.message}`)
+    combinedLogger.error(`Error while pausing/unpausing plan: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -250,7 +250,7 @@ const getUser = async (req, res) => {
       data: userData,
     })
   } catch (error) {
-    combinedLogger.error(`Error occurred while fetching user by wallet: ${error.message}`)
+    combinedLogger.error(`Error occurred while fetching user by wallet: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "could not find user",
@@ -355,7 +355,7 @@ const updateUser = async (req, res) => {
       data: updatedUser,
     })
   } catch (error) {
-    combinedLogger.error(`Error occurred while updating user: ${error.message}`)
+    combinedLogger.error(`Error occurred while updating user: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -397,7 +397,7 @@ const trackReferralClick = async (req, res) => {
       message: "referral click tracked successfully",
     })
   } catch (error) {
-    combinedLogger.error(`Error occurred while tracking referral click: ${error.message}`)
+    combinedLogger.error(`Error occurred while tracking referral click: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -453,7 +453,7 @@ const getSharePage = async (req, res) => {
       data: shareData,
     })
   } catch (error) {
-    combinedLogger.error(`Error occurred while fetching share page data: ${error.message}`)
+    combinedLogger.error(`Error occurred while fetching share page data: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",
@@ -500,7 +500,7 @@ const getLeaderboard = async (req, res) => {
       data: leaderboard,
     })
   } catch (error) {
-    combinedLogger.error(`Error occurred while fetching leaderboard: ${error.message}`)
+    combinedLogger.error(`Error occurred while fetching leaderboard: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
     return res.status(500).json({
       success: false,
       message: "internal server error",

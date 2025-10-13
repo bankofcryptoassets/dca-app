@@ -82,14 +82,14 @@ async function processPayments() {
         await plan.save();
         combinedLogger.info(`Processed Plan ${plan.planId} successfully`);
       } catch (err) {
-        combinedLogger.error(`Error processing Plan ${plan.planId}: ${err.message}`);
+        combinedLogger.error(`Error processing Plan ${plan.planId}: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
       }
     }
 
     combinedLogger.info("Finished processing today's payments");
     process.exit(0);
   } catch (err) {
-    combinedLogger.error(`Fatal error in processPayments: ${err.message}`);
+    combinedLogger.error(`Fatal error in processPayments: ${JSON.stringify(err, Object.getOwnPropertyNames(err))}`);
     process.exit(1);
   }
 }

@@ -37,7 +37,7 @@ const up = async () => {
           `Generated referralId ${referralId} for user ${user.userAddress}`
         )
       } catch (error) {
-        combinedLogger.error(`Error processing user ${user.userAddress}: ${error.message}`)
+        combinedLogger.error(`Error processing user ${user.userAddress}: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
         continue
       }
     }
