@@ -506,7 +506,7 @@ const getSharePage = async (req, res) => {
 
 const getLeaderboard = async (req, res) => {
   try {
-    const { limit = 25 } = req.query
+    const { limit = 10 } = req.query
 
     // Get users with referral data, sorted by referral count
     const users = await User.find({
