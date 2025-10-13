@@ -14,6 +14,7 @@ const miscRoutes = require("./routes/misc")
 const notificationRoutes = require("./routes/notificationRoute")
 const dustSweepRoutes = require("./routes/dustSweepRoute")
 const { executePayments } = require("./CronJobs/executePlan")
+const { getShareOG } = require("./controller/shareOgController")
 
 const app = express()
 app.use(bodyParser.json())
@@ -32,12 +33,16 @@ app.use("/api/misc", miscRoutes)
 app.use("/api", portfolioRoutes)
 app.use("/api/notifications", notificationRoutes)
 app.use("/api/dust-sweep", dustSweepRoutes)
+app.use("/api/share-og/:referralId", getShareOG)
 
 // Serve static files from admin directory for admin panel
 app.use(
   "/admin/notifications",
   express.static("assets/admin/notifications.html")
 )
+
+// Serve static files from public directory
+app.use(express.static("assets/public"))
 
 app.listen(5005, () => {
   combinedLogger.info("Server is running on port 5005")
