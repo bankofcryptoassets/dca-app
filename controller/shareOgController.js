@@ -141,7 +141,7 @@ const getShareOG = async (req, res) => {
 
     // Set headers for image response
     res.setHeader("Content-Type", "image/svg+xml")
-    // res.setHeader("Cache-Control", "public, max-age=3600") // Cache for 1 hour
+    res.setHeader("Cache-Control", "public, max-age=3600") // Cache for 1 hour
     res.send(svg)
   } catch (error) {
     combinedLogger.error(
