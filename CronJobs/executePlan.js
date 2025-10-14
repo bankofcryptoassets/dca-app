@@ -34,16 +34,15 @@ const executePayments = async (plan) => {
   )
 
   const provider = new ethers.providers.JsonRpcProvider(process.env.RPC)
+  // fetch private key from AWS.
   const executorPvtKey = await getExecutorPrivKey().catch((err) => {
     combinedLogger.error(
       "error fetching executor priv key from secrets manager: " +
-      ""
-      // JSON.stringify(err, Object.getOwnPropertyNames(err))
+      JSON.stringify(err, Object.getOwnPropertyNames(err))
     )
     return
   })
-  console.log("executor private key:: ", executorPvtKey);
-  return;
+
   const wallet = new Wallet(executorPvtKey, provider)
   const contract = new Contract(process.env.DCA_CONTRACT, DCA_ABI, wallet)
   for (const user of users) {
