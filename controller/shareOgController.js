@@ -58,7 +58,7 @@ const getShareOG = async (req, res) => {
         display: flex;
         width: 1200px;
         height: 800px;
-        background-image: url('${serverUrl}/images/share-og.png');
+        background-image: url('${serverUrl}/images/share-og-1.png');
         background-size: cover;
         position: relative;
       "
