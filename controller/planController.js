@@ -14,11 +14,7 @@ const planSummary = async (req, res) => {
   const remainingAmount = btcInUsd - initialPay
   const timeNeededToComplete = remainingAmount / pledgedPay
 
-  res.status(200).json({
-    btcInUsd,
-    remainingAmount,
-    timeNeededToComplete,
-  })
+  res.status(200).json({ btcInUsd, remainingAmount, timeNeededToComplete })
 }
 
 const getPlan = async (req, res) => {
@@ -31,9 +27,7 @@ const getPlan = async (req, res) => {
     )
   }
 
-  res.status(200).json({
-    plan,
-  })
+  res.status(200).json({ plan })
 }
 
 const getPayments = async (req, res) => {
@@ -48,9 +42,7 @@ const getPayments = async (req, res) => {
       payment = await Payment.findById(req.param.id).populate("user")
     }
 
-    res.status(200).json({
-      payment,
-    })
+    res.status(200).json({ payment })
   } catch (error) {
     res.status(500).json({ message: "Server error", error })
   }
@@ -73,17 +65,15 @@ const createPlan = async (req, res) => {
     } = req.body
 
     if (!wallet || !isAddress(wallet)) {
-      return res.status(400).json({
-        success: false,
-        message: "invalid wallet address",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid wallet address" })
     }
 
     if (!amount || !target || isNaN(amount) || isNaN(target)) {
-      return res.status(400).json({
-        success: false,
-        message: "invalid amount or target",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid amount or target" })
     }
 
     combinedLogger.info(
@@ -91,10 +81,9 @@ const createPlan = async (req, res) => {
     )
 
     if (planType !== "daily" && planType !== "weekly") {
-      return res.status(400).json({
-        success: false,
-        message: "invalid plan type",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid plan type" })
     }
 
     // Generate user's referralId from userAddress
@@ -129,10 +118,12 @@ const createPlan = async (req, res) => {
     })
 
     if (ret instanceof Error) {
-      return res.status(500).json({
-        success: false,
-        message: "internal server error, could not save in db",
-      })
+      return res
+        .status(500)
+        .json({
+          success: false,
+          message: "internal server error, could not save in db",
+        })
     }
 
     combinedLogger.info(`New user created successfully for wallet: ${wallet}`)
@@ -148,18 +139,12 @@ const createPlan = async (req, res) => {
         if (referringUser) {
           await User.updateOne(
             { userAddress: wallet },
-            {
-              $set: {
-                referredBy: referringUser.referralId,
-              },
-            }
+            { $set: { referredBy: referringUser.referralId } }
           )
           // Add the new user's referralId to the referring user's referredUsers array
           await User.updateOne(
             { userAddress: referringUser.userAddress },
-            {
-              $addToSet: { referredUsers: referralId },
-            }
+            { $addToSet: { referredUsers: referralId } }
           )
         }
       } catch (referralError) {
@@ -173,10 +158,7 @@ const createPlan = async (req, res) => {
       }
     }
 
-    return res.status(201).json({
-      success: true,
-      message: "new user created",
-    })
+    return res.status(201).json({ success: true, message: "new user created" })
   } catch (error) {
     combinedLogger.error(
       `Error occurred while creating plan: ${JSON.stringify(
@@ -184,46 +166,38 @@ const createPlan = async (req, res) => {
         Object.getOwnPropertyNames(error)
       )}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "internal server error" })
   }
 }
 
 const pausePlan = async (req, res) => {
   try {
     const { wallet, unpause } = req.body
-    const result = await User.findOne({
-      userAddress: wallet,
-    })
+    const result = await User.findOne({ userAddress: wallet })
 
     if (!result) {
-      return res.status(400).json({
-        success: false,
-        message: "invalid wallet address",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid wallet address" })
     }
 
     await User.updateOne(
-      {
-        userAddress: wallet,
-      },
-      {
-        $set: {
-          paused: unpause ? false : true,
-        },
-      }
+      { userAddress: wallet },
+      { $set: { paused: unpause ? false : true } }
     )
 
     combinedLogger.info(
       `Plan ${unpause ? "unpaused" : "paused"} for wallet: ${wallet}`
     )
 
-    return res.status(200).json({
-      success: true,
-      message: `plan ${unpause ? "unpaused" : "paused"} successfully`,
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: `plan ${unpause ? "unpaused" : "paused"} successfully`,
+      })
   } catch (error) {
     combinedLogger.error(
       `Error while pausing/unpausing plan: ${JSON.stringify(
@@ -231,26 +205,21 @@ const pausePlan = async (req, res) => {
         Object.getOwnPropertyNames(error)
       )}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "internal server error" })
   }
 }
 
 const getUser = async (req, res) => {
   try {
     const { wallet } = req.query
-    const result = await User.findOne({
-      userAddress: wallet,
-    })
+    const result = await User.findOne({ userAddress: wallet })
 
     if (!result) {
-      return res.status(200).json({
-        success: false,
-        message: "user not found",
-        data: null,
-      })
+      return res
+        .status(200)
+        .json({ success: false, message: "user not found", data: null })
     }
 
     // Calculate referral statistics
@@ -266,11 +235,9 @@ const getUser = async (req, res) => {
       referralClickCount,
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "user fetch successful",
-      data: userData,
-    })
+    return res
+      .status(200)
+      .json({ success: true, message: "user fetch successful", data: userData })
   } catch (error) {
     combinedLogger.error(
       `Error occurred while fetching user by wallet: ${JSON.stringify(
@@ -278,10 +245,9 @@ const getUser = async (req, res) => {
         Object.getOwnPropertyNames(error)
       )}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "could not find user",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "could not find user" })
   }
 }
 
@@ -298,10 +264,9 @@ const updateUser = async (req, res) => {
     } = req.body
 
     if (!wallet || !isAddress(wallet)) {
-      return res.status(400).json({
-        success: false,
-        message: "invalid wallet address",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "invalid wallet address" })
     }
 
     if (
@@ -312,21 +277,15 @@ const updateUser = async (req, res) => {
       !clientFid &&
       !clientPlatformType
     ) {
-      return res.status(400).json({
-        success: false,
-        message: "at least one field is required",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "at least one field is required" })
     }
 
-    const user = await User.findOne({
-      userAddress: wallet,
-    })
+    const user = await User.findOne({ userAddress: wallet })
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "user not found",
-      })
+      return res.status(404).json({ success: false, message: "user not found" })
     }
 
     const updateData = {}
@@ -363,11 +322,13 @@ const updateUser = async (req, res) => {
 
     // If no fields to update, return success
     if (Object.keys(updateData).length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "no updates needed - fields already exist",
-        data: user,
-      })
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message: "no updates needed - fields already exist",
+          data: user,
+        })
     }
 
     const updatedUser = await User.findOneAndUpdate(
@@ -376,11 +337,13 @@ const updateUser = async (req, res) => {
       { new: true }
     )
 
-    return res.status(200).json({
-      success: true,
-      message: "user updated successfully",
-      data: updatedUser,
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "user updated successfully",
+        data: updatedUser,
+      })
   } catch (error) {
     combinedLogger.error(
       `Error occurred while updating user: ${JSON.stringify(
@@ -388,10 +351,9 @@ const updateUser = async (req, res) => {
         Object.getOwnPropertyNames(error)
       )}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "internal server error" })
   }
 }
 
@@ -400,34 +362,32 @@ const trackReferralClick = async (req, res) => {
     const { referrerReferralId } = req.body
 
     if (!referrerReferralId) {
-      return res.status(400).json({
-        success: false,
-        message: "referrerReferralId is required",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "referrerReferralId is required" })
     }
 
     // Find the user by referralId
     const user = await User.findOne({ referralId: referrerReferralId })
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "User with provided referralId not found",
-      })
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "User with provided referralId not found",
+        })
     }
 
     // Increment referralClicks count
     await User.updateOne(
       { referralId: referrerReferralId },
-      {
-        $inc: { referralClicks: 1 },
-      }
+      { $inc: { referralClicks: 1 } }
     )
 
-    return res.status(200).json({
-      success: true,
-      message: "referral click tracked successfully",
-    })
+    return res
+      .status(200)
+      .json({ success: true, message: "referral click tracked successfully" })
   } catch (error) {
     combinedLogger.error(
       `Error occurred while tracking referral click: ${JSON.stringify(
@@ -435,10 +395,9 @@ const trackReferralClick = async (req, res) => {
         Object.getOwnPropertyNames(error)
       )}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "internal server error" })
   }
 }
 
@@ -447,19 +406,15 @@ const getSharePage = async (req, res) => {
     const { referralId } = req.params
 
     if (!referralId) {
-      return res.status(400).json({
-        success: false,
-        message: "referralId is required",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "referralId is required" })
     }
 
     const user = await User.findOne({ referralId })
 
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "user not found",
-      })
+      return res.status(404).json({ success: false, message: "user not found" })
     }
 
     // Calculate referral statistics
@@ -485,11 +440,13 @@ const getSharePage = async (req, res) => {
       amount: user.amount,
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "share page data retrieved successfully",
-      data: shareData,
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "share page data retrieved successfully",
+        data: shareData,
+      })
   } catch (error) {
     combinedLogger.error(
       `Error occurred while fetching share page data: ${JSON.stringify(
@@ -497,10 +454,9 @@ const getSharePage = async (req, res) => {
         Object.getOwnPropertyNames(error)
       )}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "internal server error" })
   }
 }
 
@@ -511,7 +467,7 @@ const getLeaderboard = async (req, res) => {
     // Get users with referral data, sorted by referral count
     const users = await User.find({
       referralId: { $exists: true, $ne: null },
-      referredUsers: { $exists: true, $ne: null, $ne: [] },
+      referredUsers: { $exists: true, $nin: [null, []] },
     })
       .sort({ referredUsers: -1 })
       .limit(parseInt(limit))
@@ -534,11 +490,13 @@ const getLeaderboard = async (req, res) => {
       }
     })
 
-    return res.status(200).json({
-      success: true,
-      message: "leaderboard retrieved successfully",
-      data: leaderboard,
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "leaderboard retrieved successfully",
+        data: leaderboard,
+      })
   } catch (error) {
     combinedLogger.error(
       `Error occurred while fetching leaderboard: ${JSON.stringify(
@@ -546,10 +504,9 @@ const getLeaderboard = async (req, res) => {
         Object.getOwnPropertyNames(error)
       )}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "internal server error",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: "internal server error" })
   }
 }
 

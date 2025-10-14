@@ -1,6 +1,6 @@
-const { getBtcExchangeRate } = require("../controller/misc");
-const router = require("express").Router();
+const { getBtcExchangeRate } = require("../controller/misc")
+const router = require("express").Router()
 
-router.get("/btcExchangeRate", getBtcExchangeRate);
+router.get("/btcExchangeRate", getBtcExchangeRate)
 
-module.exports = router;
+module.exports = router

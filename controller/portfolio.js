@@ -40,9 +40,7 @@ const getWalletPortfolio = async (req, res) => {
 
   const portfolioData = await get({
     url: `${process.env.MOBULA_BASE_URL}/api/1/wallet/portfolio?wallet=${wallet}&blockchains=base`,
-    headers: {
-      Authorization: `${process.env.MOBULA_API_KEY}`,
-    },
+    headers: { Authorization: `${process.env.MOBULA_API_KEY}` },
   }).catch((error) => {
     combinedLogger.error(
       `Error fetching portfolio data: ${JSON.stringify(
@@ -54,18 +52,20 @@ const getWalletPortfolio = async (req, res) => {
   })
 
   if (portfolioData instanceof Error) {
-    return res.status(500).json({
-      error: "Failed to fetch portfolio data",
-      reason: portfolioData?.data,
-    })
+    return res
+      .status(500)
+      .json({
+        error: "Failed to fetch portfolio data",
+        reason: portfolioData?.data,
+      })
   }
 
-  return res.status(200).json({
-    message: "Portfolio data",
-    data: filterDustSweepableBalances(portfolioData?.data),
-  })
+  return res
+    .status(200)
+    .json({
+      message: "Portfolio data",
+      data: filterDustSweepableBalances(portfolioData?.data),
+    })
 }
 
-module.exports = {
-  getWalletPortfolio,
-}
+module.exports = { getWalletPortfolio }

@@ -1,4 +1,3 @@
-const express = require("express")
 const { combinedLogger } = require("../utils/logger")
 const User = require("../model/userModel")
 const satori = require("satori").default
@@ -130,12 +129,7 @@ const getShareOG = async (req, res) => {
       width: 1200,
       height: 800,
       fonts: [
-        {
-          name: "Inter",
-          data: await inter,
-          weight: 400,
-          style: "normal",
-        },
+        { name: "Inter", data: await inter, weight: 400, style: "normal" },
       ],
     })
 

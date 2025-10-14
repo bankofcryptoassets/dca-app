@@ -26,22 +26,18 @@ const recordDustSweepTransaction = async (req, res) => {
       !cbbtcReceived ||
       !usdValue
     ) {
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" })
     }
 
     // Check if transaction already exists
-    const existingTransaction = await DustSweep.findOne({
-      transactionHash,
-    })
+    const existingTransaction = await DustSweep.findOne({ transactionHash })
 
     if (existingTransaction) {
-      return res.status(400).json({
-        success: false,
-        message: "Transaction already recorded",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "Transaction already recorded" })
     }
 
     // Create new dust sweep record
@@ -56,24 +52,27 @@ const recordDustSweepTransaction = async (req, res) => {
 
     await dustSweepRecord.save()
 
-    return res.status(201).json({
-      success: true,
-      message: "Dust sweep transaction recorded successfully",
-      data: dustSweepRecord,
-    })
-
     combinedLogger.info(
       `Dust sweep transaction recorded for user: ${userAddress}, tx: ${transactionHash}`
     )
+    return res
+      .status(201)
+      .json({
+        success: true,
+        message: "Dust sweep transaction recorded successfully",
+        data: dustSweepRecord,
+      })
   } catch (error) {
     combinedLogger.error(
       `Error in recordDustSweepTransaction: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
     )
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    })
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      })
   }
 }
 
@@ -86,10 +85,9 @@ const getDustSweepHistory = async (req, res) => {
     const { page = 1, limit = 10 } = req.query
 
     if (!wallet) {
-      return res.status(400).json({
-        success: false,
-        message: "Wallet address is required",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "Wallet address is required" })
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit)
@@ -115,31 +113,37 @@ const getDustSweepHistory = async (req, res) => {
       },
     ])
 
-    return res.status(200).json({
-      success: true,
-      message: "Dust sweep history retrieved successfully",
-      data: {
-        history: dustSweepHistory,
-        pagination: {
-          page: parseInt(page),
-          limit: parseInt(limit),
-          total: totalCount,
-          pages: Math.ceil(totalCount / parseInt(limit)),
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Dust sweep history retrieved successfully",
+        data: {
+          history: dustSweepHistory,
+          pagination: {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            total: totalCount,
+            pages: Math.ceil(totalCount / parseInt(limit)),
+          },
+          summary: totalDustSwept[0] || {
+            totalCBBTC: 0,
+            totalUSD: 0,
+            count: 0,
+          },
         },
-        summary: totalDustSwept[0] || {
-          totalCBBTC: 0,
-          totalUSD: 0,
-          count: 0,
-        },
-      },
-    })
+      })
   } catch (error) {
-    combinedLogger.error(`Error in getDustSweepHistory: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    })
+    combinedLogger.error(
+      `Error in getDustSweepHistory: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      })
   }
 }
 
@@ -152,10 +156,9 @@ const updateDustSweepStatus = async (req, res) => {
     const { status, gasUsed, blockNumber } = req.body
 
     if (!status || !["pending", "completed", "failed"].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid status provided",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid status provided" })
     }
 
     const updateData = { status }
@@ -169,24 +172,29 @@ const updateDustSweepStatus = async (req, res) => {
     )
 
     if (!updatedTransaction) {
-      return res.status(404).json({
-        success: false,
-        message: "Transaction not found",
-      })
+      return res
+        .status(404)
+        .json({ success: false, message: "Transaction not found" })
     }
 
-    return res.status(200).json({
-      success: true,
-      message: "Dust sweep transaction updated successfully",
-      data: updatedTransaction,
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Dust sweep transaction updated successfully",
+        data: updatedTransaction,
+      })
   } catch (error) {
-    combinedLogger.error(`Error in updateDustSweepStatus: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
-    return res.status(500).json({
-      success: false,
-      message: "Internal server error",
-      error: error.message,
-    })
+    combinedLogger.error(
+      `Error in updateDustSweepStatus: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return res
+      .status(500)
+      .json({
+        success: false,
+        message: "Internal server error",
+        error: error.message,
+      })
   }
 }
 
@@ -221,10 +229,9 @@ const getSwapCalldata = async (req, res) => {
         "getSwapCalldata -- Missing required fields: " +
           JSON.stringify(req.body, Object.getOwnPropertyNames(req.body))
       )
-      return res.status(400).json({
-        success: false,
-        message: "Missing required fields",
-      })
+      return res
+        .status(400)
+        .json({ success: false, message: "Missing required fields" })
     }
 
     const provider = new ethers.providers.JsonRpcProvider(process.env.RPC)
@@ -245,10 +252,9 @@ const getSwapCalldata = async (req, res) => {
       "getSwapCalldata -- Failed to generate swap calldata: " +
         JSON.stringify(error, Object.getOwnPropertyNames(error))
     )
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Unknown error",
-    })
+    return res
+      .status(500)
+      .json({ success: false, message: error.message || "Unknown error" })
   }
 }
 

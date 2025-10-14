@@ -13,19 +13,17 @@ async function handleWebhook(req, res) {
     const webhookData = parseWebhookData(req.body)
 
     if (!webhookData || !webhookData.event) {
-      return res.status(400).json({
-        success: false,
-        error: "Invalid webhook data",
-      })
+      return res
+        .status(400)
+        .json({ success: false, error: "Invalid webhook data" })
     }
 
     const { fid, event } = webhookData
 
     if (!fid) {
-      return res.status(400).json({
-        success: false,
-        error: "Missing fid in webhook data",
-      })
+      return res
+        .status(400)
+        .json({ success: false, error: "Missing fid in webhook data" })
     }
 
     switch (event.event) {
@@ -53,11 +51,10 @@ async function handleWebhook(req, res) {
 
     return res.status(200).json({ success: true })
   } catch (error) {
-    combinedLogger.error(`Webhook handler error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    combinedLogger.error(
+      `Webhook handler error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return res.status(500).json({ success: false, error: error.message })
   }
 }
 
@@ -83,11 +80,7 @@ async function handleMiniAppAdded(fid, notificationDetails) {
     // User added mini app but notifications not enabled
     await UserNotification.findOneAndUpdate(
       { fid },
-      {
-        fid,
-        miniAppAdded: true,
-        enabled: false,
-      },
+      { fid, miniAppAdded: true, enabled: false },
       { upsert: true, new: true }
     )
   }
@@ -96,10 +89,7 @@ async function handleMiniAppAdded(fid, notificationDetails) {
 async function handleMiniAppRemoved(fid) {
   await UserNotification.findOneAndUpdate(
     { fid },
-    {
-      miniAppAdded: false,
-      enabled: false,
-    }
+    { miniAppAdded: false, enabled: false }
   )
 }
 
@@ -126,12 +116,7 @@ async function handleNotificationsEnabled(fid, notificationDetails) {
 }
 
 async function handleNotificationsDisabled(fid) {
-  await UserNotification.findOneAndUpdate(
-    { fid },
-    {
-      enabled: false,
-    }
-  )
+  await UserNotification.findOneAndUpdate({ fid }, { enabled: false })
 }
 
 /**
@@ -142,10 +127,7 @@ async function getUserNotifications(req, res) {
     const { fid } = req.params
 
     if (!fid) {
-      return res.status(400).json({
-        success: false,
-        error: "FID is required",
-      })
+      return res.status(400).json({ success: false, error: "FID is required" })
     }
 
     const userNotification = await UserNotification.findOne({
@@ -153,22 +135,18 @@ async function getUserNotifications(req, res) {
     })
 
     if (!userNotification) {
-      return res.status(404).json({
-        success: false,
-        error: "User notification not found",
-      })
+      return res
+        .status(404)
+        .json({ success: false, error: "User notification not found" })
     }
 
-    return res.status(200).json({
-      success: true,
-      data: userNotification,
-    })
+    return res.status(200).json({ success: true, data: userNotification })
   } catch (error) {
-    console.error("Get user notifications error:", error)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    combinedLogger.error(
+      "Get user notifications error: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
+    return res.status(500).json({ success: false, error: error.message })
   }
 }
 
@@ -182,10 +160,7 @@ async function updateUserNotifications(req, res) {
       req.body
 
     if (!fid) {
-      return res.status(400).json({
-        success: false,
-        error: "FID is required",
-      })
+      return res.status(400).json({ success: false, error: "FID is required" })
     }
 
     if (
@@ -194,10 +169,9 @@ async function updateUserNotifications(req, res) {
       enabled === undefined &&
       miniAppAdded === undefined
     ) {
-      return res.status(400).json({
-        success: false,
-        error: "At least one field is required",
-      })
+      return res
+        .status(400)
+        .json({ success: false, error: "At least one field is required" })
     }
 
     const userNotification = await UserNotification.findOne({
@@ -205,10 +179,9 @@ async function updateUserNotifications(req, res) {
     })
 
     if (!userNotification) {
-      return res.status(404).json({
-        success: false,
-        error: "User notification not found",
-      })
+      return res
+        .status(404)
+        .json({ success: false, error: "User notification not found" })
     }
 
     const updateData = {}
@@ -232,11 +205,13 @@ async function updateUserNotifications(req, res) {
 
     // If no fields to update, return success
     if (Object.keys(updateData).length === 0) {
-      return res.status(200).json({
-        success: true,
-        message: "No updates needed",
-        data: userNotification,
-      })
+      return res
+        .status(200)
+        .json({
+          success: true,
+          message: "No updates needed",
+          data: userNotification,
+        })
     }
 
     const updatedUserNotification = await UserNotification.findOneAndUpdate(
@@ -245,17 +220,19 @@ async function updateUserNotifications(req, res) {
       { new: true }
     )
 
-    return res.status(200).json({
-      success: true,
-      message: "User notification updated successfully",
-      data: updatedUserNotification,
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "User notification updated successfully",
+        data: updatedUserNotification,
+      })
   } catch (error) {
-    console.error("Update user notifications error:", error)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    combinedLogger.error(
+      "Update user notifications error: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
+    return res.status(500).json({ success: false, error: error.message })
   }
 }
 
@@ -268,24 +245,30 @@ async function sendNotification(req, res) {
 
     // Validation
     if (!title || title.length > 32) {
-      return res.status(400).json({
-        success: false,
-        error: "Title is required and must be <= 32 characters",
-      })
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Title is required and must be <= 32 characters",
+        })
     }
 
     if (!body || body.length > 128) {
-      return res.status(400).json({
-        success: false,
-        error: "Body is required and must be <= 128 characters",
-      })
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Body is required and must be <= 128 characters",
+        })
     }
 
     if (!targetUrl || targetUrl.length > 1024) {
-      return res.status(400).json({
-        success: false,
-        error: "Target URL is required and must be <= 1024 characters",
-      })
+      return res
+        .status(400)
+        .json({
+          success: false,
+          error: "Target URL is required and must be <= 1024 characters",
+        })
     }
 
     // Generate unique notification ID
@@ -305,20 +288,17 @@ async function sendNotification(req, res) {
       })
     } else {
       // Send to all users with notifications enabled
-      recipients = await UserNotification.find({
-        enabled: true,
-      })
+      recipients = await UserNotification.find({ enabled: true })
     }
 
     if (recipients.length === 0) {
-      return res.status(400).json({
-        success: false,
-        error: "No eligible recipients found",
-      })
+      return res
+        .status(400)
+        .json({ success: false, error: "No eligible recipients found" })
     }
 
     // Create notification log
-    const notificationLog = await NotificationLog.create({
+    await NotificationLog.create({
       notificationId,
       title,
       body,
@@ -354,9 +334,7 @@ async function sendNotification(req, res) {
 
           const response = await fetch(url, {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               notificationId,
               title,
@@ -405,30 +383,26 @@ async function sendNotification(req, res) {
     // Update notification log with results
     await NotificationLog.findOneAndUpdate(
       { notificationId },
-      {
-        successfulCount,
-        failedCount,
-        rateLimitedCount,
-        status: "completed",
-      }
+      { successfulCount, failedCount, rateLimitedCount, status: "completed" }
     )
 
-    return res.status(200).json({
-      success: true,
-      notificationId,
-      results: {
-        total: recipients.length,
-        successful: successfulCount,
-        failed: failedCount,
-        rateLimited: rateLimitedCount,
-      },
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        notificationId,
+        results: {
+          total: recipients.length,
+          successful: successfulCount,
+          failed: failedCount,
+          rateLimited: rateLimitedCount,
+        },
+      })
   } catch (error) {
-    combinedLogger.error(`Send notification error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    combinedLogger.error(
+      `Send notification error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return res.status(500).json({ success: false, error: error.message })
   }
 }
 
@@ -447,22 +421,23 @@ async function getNotifications(req, res) {
 
     const total = await NotificationLog.countDocuments()
 
-    return res.status(200).json({
-      success: true,
-      data: notifications,
-      pagination: {
-        page: parseInt(page),
-        limit: parseInt(limit),
-        total,
-        pages: Math.ceil(total / limit),
-      },
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        data: notifications,
+        pagination: {
+          page: parseInt(page),
+          limit: parseInt(limit),
+          total,
+          pages: Math.ceil(total / limit),
+        },
+      })
   } catch (error) {
-    combinedLogger.error(`Get notifications error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    combinedLogger.error(
+      `Get notifications error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return res.status(500).json({ success: false, error: error.message })
   }
 }
 
@@ -474,39 +449,33 @@ async function trackNotificationClick(req, res) {
     const { notificationId, fid } = req.body
 
     if (!notificationId) {
-      return res.status(400).json({
-        success: false,
-        error: "notificationId is required",
-      })
+      return res
+        .status(400)
+        .json({ success: false, error: "notificationId is required" })
     }
 
     const notification = await NotificationLog.findOne({ notificationId })
 
     if (!notification) {
-      return res.status(404).json({
-        success: false,
-        error: "Notification not found",
-      })
+      return res
+        .status(404)
+        .json({ success: false, error: "Notification not found" })
     }
 
     // Only increment if this FID hasn't clicked before
     if (fid && !notification.clickedByFids.includes(fid)) {
       await NotificationLog.findOneAndUpdate(
         { notificationId },
-        {
-          $inc: { clickCount: 1 },
-          $push: { clickedByFids: fid },
-        }
+        { $inc: { clickCount: 1 }, $push: { clickedByFids: fid } }
       )
     }
 
     return res.status(200).json({ success: true })
   } catch (error) {
-    combinedLogger.error(`Track notification click error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    combinedLogger.error(
+      `Track notification click error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return res.status(500).json({ success: false, error: error.message })
   }
 }
 
@@ -524,21 +493,22 @@ async function getNotificationStats(req, res) {
       { $group: { _id: null, total: { $sum: "$clickCount" } } },
     ])
 
-    return res.status(200).json({
-      success: true,
-      stats: {
-        totalUsers,
-        enabledUsers,
-        totalNotificationsSent: totalNotifications,
-        totalClicks: totalClicks[0]?.total || 0,
-      },
-    })
+    return res
+      .status(200)
+      .json({
+        success: true,
+        stats: {
+          totalUsers,
+          enabledUsers,
+          totalNotificationsSent: totalNotifications,
+          totalClicks: totalClicks[0]?.total || 0,
+        },
+      })
   } catch (error) {
-    combinedLogger.error(`Get notification stats error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
-    return res.status(500).json({
-      success: false,
-      error: error.message,
-    })
+    combinedLogger.error(
+      `Get notification stats error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return res.status(500).json({ success: false, error: error.message })
   }
 }
 

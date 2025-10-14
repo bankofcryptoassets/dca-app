@@ -6,36 +6,14 @@ const mongoose = require("mongoose")
  */
 const userNotificationSchema = new mongoose.Schema(
   {
-    fid: {
-      type: Number,
-      required: true,
-      unique: true,
-      index: true,
-    },
-    notificationUrl: {
-      type: String,
-      required: true,
-    },
-    notificationToken: {
-      type: String,
-      required: true,
-    },
-    enabled: {
-      type: Boolean,
-      default: true,
-    },
-    miniAppAdded: {
-      type: Boolean,
-      default: true,
-    },
-    lastNotificationSentAt: {
-      type: Date,
-      default: null,
-    },
+    fid: { type: Number, required: true, unique: true, index: true },
+    notificationUrl: { type: String, required: true },
+    notificationToken: { type: String, required: true },
+    enabled: { type: Boolean, default: true },
+    miniAppAdded: { type: Boolean, default: true },
+    lastNotificationSentAt: { type: Date, default: null },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 )
 
 const UserNotification = mongoose.model(

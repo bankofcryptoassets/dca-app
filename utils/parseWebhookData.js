@@ -7,10 +7,7 @@ const parseWebhookData = (webhookData) => {
     Buffer.from(payload, "base64").toString("utf-8")
   )
 
-  return {
-    fid: decodedHeader?.fid,
-    event: decodedPayload,
-  }
+  return { fid: decodedHeader?.fid, event: decodedPayload }
 }
 
 exports.parseWebhookData = parseWebhookData

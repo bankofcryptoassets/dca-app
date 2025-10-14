@@ -113,10 +113,7 @@ async function sendNotificationToUser(
           ": " +
           eligibility.reason
       )
-      return {
-        success: false,
-        error: eligibility.reason,
-      }
+      return { success: false, error: eligibility.reason }
     }
 
     const { userNotification } = eligibility
@@ -125,7 +122,7 @@ async function sendNotificationToUser(
     const notificationId = crypto.randomUUID()
 
     // Create notification log
-    const notificationLog = await NotificationLog.create({
+    await NotificationLog.create({
       notificationId,
       title,
       body,
@@ -141,9 +138,7 @@ async function sendNotificationToUser(
     try {
       const response = await fetch(userNotification.notificationUrl, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           notificationId,
           title,
@@ -176,20 +171,13 @@ async function sendNotificationToUser(
             }
           )
 
-          return {
-            success: false,
-            error: "Invalid notification token",
-          }
+          return { success: false, error: "Invalid notification token" }
         }
 
         // Update notification log with success
         await NotificationLog.findOneAndUpdate(
           { notificationId },
-          {
-            successfulCount: 1,
-            failedCount: 0,
-            status: "completed",
-          }
+          { successfulCount: 1, failedCount: 0, status: "completed" }
         )
 
         // Update last notification sent time
@@ -202,10 +190,7 @@ async function sendNotificationToUser(
           "sendNotificationToUser -- Notification sent successfully to " +
             userAddress
         )
-        return {
-          success: true,
-          notificationId,
-        }
+        return { success: true, notificationId }
       } else {
         combinedLogger.error(
           "sendNotificationToUser -- Failed to send notification: " +
@@ -222,10 +207,7 @@ async function sendNotificationToUser(
           }
         )
 
-        return {
-          success: false,
-          error: `HTTP ${response.status}`,
-        }
+        return { success: false, error: `HTTP ${response.status}` }
       }
     } catch (fetchError) {
       combinedLogger.error(
@@ -243,20 +225,14 @@ async function sendNotificationToUser(
         }
       )
 
-      return {
-        success: false,
-        error: fetchError.message,
-      }
+      return { success: false, error: fetchError.message }
     }
   } catch (error) {
     combinedLogger.error(
       "sendNotificationToUser -- Error in sendNotificationToUser: " +
         JSON.stringify(error, Object.getOwnPropertyNames(error))
     )
-    return {
-      success: false,
-      error: error.message,
-    }
+    return { success: false, error: error.message }
   }
 }
 
@@ -268,7 +244,7 @@ async function sendNotificationToUser(
  * @returns {Promise<{success: boolean, notificationId?: string, error?: string}>}
  */
 async function sendPurchaseConfirmationNotification(userAddress, amount) {
-  const title = "Purchase Confirmed"
+  const title = "DCA Purchase Confirmed"
   const body = `Successfully purchased $${amount} worth of BTC`
   const targetUrl = "https://dca.bitmor.xyz/"
 
@@ -284,12 +260,11 @@ async function sendPurchaseConfirmationNotification(userAddress, amount) {
 /**
  * Send lack of funds notification
  * @param {string} userAddress - The user's wallet address
- * @param {number} requiredAmount - The amount that was required
  * @returns {Promise<{success: boolean, notificationId?: string, error?: string}>}
  */
-async function sendLackOfFundsNotification(userAddress, requiredAmount) {
+async function sendLackOfFundsNotification(userAddress) {
   const title = "Insufficient Funds"
-  const body = `Need $${requiredAmount} for DCA purchase`
+  const body = `Please fund your wallet to continue your DCA plan`
   const targetUrl = "https://dca.bitmor.xyz/" // Link to add funds or settings
 
   return await sendNotificationToUser(

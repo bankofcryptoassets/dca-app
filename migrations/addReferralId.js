@@ -37,7 +37,9 @@ const up = async () => {
           `Generated referralId ${referralId} for user ${user.userAddress}`
         )
       } catch (error) {
-        combinedLogger.error(`Error processing user ${user.userAddress}: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`)
+        combinedLogger.error(
+          `Error processing user ${user.userAddress}: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+        )
         continue
       }
     }
@@ -53,15 +55,10 @@ const up = async () => {
 
 const down = async () => {
   try {
-    combinedLogger.info("Starting rollback: removing referralId field from User collection")
-    const res = await User.updateMany(
-      {},
-      {
-        $unset: {
-          referralId: "",
-        },
-      }
+    combinedLogger.info(
+      "Starting rollback: removing referralId field from User collection"
     )
+    const res = await User.updateMany({}, { $unset: { referralId: "" } })
     combinedLogger.info(
       `Rollback successful, removed referralId field from ${res.modifiedCount} users`
     )
@@ -73,4 +70,4 @@ const down = async () => {
   }
 }
 
-// module.exports = { up, down }
+module.exports = { up, down }

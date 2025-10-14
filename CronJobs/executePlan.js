@@ -6,7 +6,6 @@ const { generateSwapCalldata } = require("../utils/generateSwapCalldata")
 const {
   sendPurchaseConfirmationNotification,
   sendLackOfFundsNotification,
-  sendMilestoneAchievedNotification,
 } = require("../utils/notificationUtils")
 const { combinedLogger } = require("../utils/logger")
 const { getExecutorPrivKey } = require("../aws/secretsManager")
@@ -16,15 +15,12 @@ const executePayments = async (plan) => {
   combinedLogger.info(
     "executePayments -- starting execute payments cron" + plan
   )
-  const users = await User.find({
-    plan,
-    paused: false,
-  }).catch((err) => {
+  const users = await User.find({ plan, paused: false }).catch((err) => {
     combinedLogger.error(
       "error fetching users for plan: " +
-      plan +
-      " ,error: " +
-      JSON.stringify(err, Object.getOwnPropertyNames(err))
+        plan +
+        " ,error: " +
+        JSON.stringify(err, Object.getOwnPropertyNames(err))
     )
     return
   })
@@ -38,7 +34,7 @@ const executePayments = async (plan) => {
   const executorPvtKey = await getExecutorPrivKey().catch((err) => {
     combinedLogger.error(
       "error fetching executor priv key from secrets manager: " +
-      JSON.stringify(err, Object.getOwnPropertyNames(err))
+        JSON.stringify(err, Object.getOwnPropertyNames(err))
     )
     return
   })
@@ -65,7 +61,7 @@ const executePayments = async (plan) => {
         "executePayments -- calldata: " +
           JSON.stringify(calldata, Object.getOwnPropertyNames(calldata))
       )
-      console.log(
+      combinedLogger.info(
         "executePayments -- amount: " +
           ethers.utils.parseUnits(user.amount.toString(), 6).toString()
       )
@@ -96,9 +92,7 @@ const executePayments = async (plan) => {
       )
 
       await User.updateOne(
-        {
-          userAddress: user.userAddress,
-        },
+        { userAddress: user.userAddress },
         {
           $set: {
             totalInvested: user.totalInvested
@@ -111,9 +105,9 @@ const executePayments = async (plan) => {
       )
 
       // Calculate new total invested amount
-      const newTotalInvested = user.totalInvested
-        ? user.totalInvested + user.amount
-        : user.amount
+      // const newTotalInvested = user.totalInvested
+      //   ? user.totalInvested + user.amount
+      //   : user.amount
 
       /** NOTIFICATIONS */
       // Send purchase confirmation notification
@@ -149,24 +143,24 @@ const executePayments = async (plan) => {
       //   }
       // } catch {}
     } catch (error) {
-      combinedLogger.info(
+      combinedLogger.error(
         "executePayments -- plan execution failed for wallet: " +
           user.userAddress
+      )
+      combinedLogger.error(
+        "executePayments -- error: " +
+          JSON.stringify(error, Object.getOwnPropertyNames(error))
       )
 
       // Check if it's an insufficient funds error and send notification
       const errorMessage = error.message || error.toString()
-      combinedLogger.info(
-        "executePayments -- error: " +
-          JSON.stringify(error, Object.getOwnPropertyNames(error))
-      )
       if (
         errorMessage.toLowerCase().includes("insufficient") ||
         errorMessage.toLowerCase().includes("funds") ||
         errorMessage.toLowerCase().includes("balance")
       ) {
         try {
-          await sendLackOfFundsNotification(user.userAddress, user.amount)
+          await sendLackOfFundsNotification(user.userAddress)
         } catch {}
       }
     }
@@ -175,6 +169,4 @@ const executePayments = async (plan) => {
   }
 }
 
-module.exports = {
-  executePayments,
-}
+module.exports = { executePayments }

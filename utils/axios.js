@@ -1,21 +1,13 @@
-const axios = require('axios');
+const axios = require("axios")
 
 const get = async ({ url, headers = {} }) => {
-  try {
-    const response = await axios.get(url, { headers });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
+  const response = await axios.get(url, { headers })
+  return response.data
+}
 
 const post = async ({ url, body = {}, headers = {} }) => {
-  try {
-    const response = await axios.post(url, body, { headers });
-    return response.data;
-  } catch (error) {
-    throw error;
-  }
-};
+  const response = await axios.post(url, body, { headers })
+  return response.data
+}
 
-module.exports = { get, post };
+module.exports = { get, post }

@@ -4,10 +4,9 @@ const basicAuth = (req, res, next) => {
 
   if (!authHeader || !authHeader.startsWith("Basic ")) {
     res.setHeader("WWW-Authenticate", 'Basic realm="Admin Area"')
-    return res.status(401).json({
-      success: false,
-      error: "Authentication required",
-    })
+    return res
+      .status(401)
+      .json({ success: false, error: "Authentication required" })
   }
 
   const base64Credentials = authHeader.split(" ")[1]
@@ -23,10 +22,9 @@ const basicAuth = (req, res, next) => {
     next()
   } else {
     res.setHeader("WWW-Authenticate", 'Basic realm="Admin Area"')
-    return res.status(401).json({
-      success: false,
-      error: "Invalid credentials",
-    })
+    return res
+      .status(401)
+      .json({ success: false, error: "Invalid credentials" })
   }
 }
 
