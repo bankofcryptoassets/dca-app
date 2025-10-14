@@ -1,18 +1,14 @@
-const mongoose = require("mongoose");
+const mongoose = require("mongoose")
 
 const planSchema = new mongoose.Schema({
   user: { type: mongoose.Types.ObjectId, ref: "User", required: true },
   userAddress: { type: String, required: true },
-  planId: {
-    type: String,
-    required: true,
-    unique: true,
-  },
+  planId: { type: String, required: true, unique: true },
   btcAmount: { type: Number, required: true },
   initialPay: { type: Number },
   totalPaid: { type: Number },
   remainingToBePaid: { type: Number },
-  valueAccured : { type: Number },
+  valueAccured: { type: Number },
   status: {
     type: String,
     enum: ["active", "liquidating", "inactive", "liquidated"],
@@ -35,7 +31,7 @@ const planSchema = new mongoose.Schema({
   nearLiquidation: { type: Boolean, default: false },
   slashAblePercentage: { type: Number },
   rewardsEarned: { type: Number, default: 0 },
-});
+})
 
 // const Plan = mongoose.model("Plan", planSchema);
 

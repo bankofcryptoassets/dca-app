@@ -1,85 +1,77 @@
-const jwt = require("jsonwebtoken");
-const dotenv = require("dotenv");
-const AppError = require("../utils/appError");
-const { createPublicClient, http } = require("viem");
-const { parseSiweMessage } = require("viem/siwe");
-const { baseSepolia } = require("viem/chains");
-const { combinedLogger } = require("../utils/logger");
-dotenv.config();
+const jwt = require("jsonwebtoken")
+const dotenv = require("dotenv")
+const AppError = require("../utils/appError")
+const { createPublicClient, http } = require("viem")
+const { parseSiweMessage } = require("viem/siwe")
+const { baseSepolia } = require("viem/chains")
+const { combinedLogger } = require("../utils/logger")
+dotenv.config()
 
-const User = require("../model/userModel");
+const User = require("../model/userModel")
 
 exports.getNonce = async (req, res, next) => {
-  combinedLogger.info("Nonce request received");
+  combinedLogger.info("Nonce request received")
   // Generate a more secure nonce for SIWE
-  const { generateSiweNonce } = require("viem/siwe");
-  const nonce = generateSiweNonce();
-  const address = req.query.address;
-  if (!address) return next(new AppError("Address parameter missing", 403));
+  const { generateSiweNonce } = require("viem/siwe")
+  const nonce = generateSiweNonce()
+  const address = req.query.address
+  if (!address) return next(new AppError("Address parameter missing", 403))
 
   const tempToken = jwt.sign({ nonce, address }, process.env.JWTSECRET, {
     expiresIn: "1h",
-  });
+  })
 
-  combinedLogger.debug("Temp token generated for address");
+  combinedLogger.debug("Temp token generated for address")
 
-  res.status(200).json({
-    status: "success",
-    nonce,
-    token: tempToken,
-  });
-};
+  res.status(200).json({ status: "success", nonce, token: tempToken })
+}
 
 exports.verifyUser = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.split(" ")[1] || null;
+  const authHeader = req.headers.authorization
+  const token = authHeader?.split(" ")[1] || null
   if (token === null)
-    return next(new AppError("Invalid Authorization Header", 403));
+    return next(new AppError("Invalid Authorization Header", 403))
   if (!req.body.signature)
-    return next(new AppError("Signature parameter missing", 403));
+    return next(new AppError("Signature parameter missing", 403))
 
   try {
-    const decoded = jwt.verify(token, process.env.JWTSECRET);
+    const decoded = jwt.verify(token, process.env.JWTSECRET)
 
-    combinedLogger.debug("JWT token decoded successfully");
-    const signature = req.body.signature;
-    const accessToken = req.body.accessToken || null;
+    combinedLogger.debug("JWT token decoded successfully")
+    const signature = req.body.signature
+    const accessToken = req.body.accessToken || null
 
     // Check if a SIWE message was provided
-    const message = req.body.message;
+    const message = req.body.message
 
     // If no message is provided or it's not in SIWE format, create one
     if (!message) {
-      return next(new AppError("Invalid message", 403));
+      return next(new AppError("Invalid message", 403))
     }
 
     const publicClient = createPublicClient({
       chain: baseSepolia,
       transport: http(),
-    });
+    })
 
     // Verify the SIWE message
     const valid = await publicClient.verifySiweMessage({
       message: message,
       signature: signature,
-    });
+    })
 
     if (!valid) {
-      return next(new AppError("Invalid Signature", 403));
+      return next(new AppError("Invalid Signature", 403))
     }
 
     // Parse the message to get the address
-    const siweMessage = parseSiweMessage(message);
-    const userAddress = siweMessage.address.toLowerCase();
+    const siweMessage = parseSiweMessage(message)
+    const userAddress = siweMessage.address.toLowerCase()
 
-    let user = await User.findOne({
-      user_address: userAddress,
-    });
+    let user = await User.findOne({ user_address: userAddress })
 
     if (!user) {
-      user = await User.create({
-        user_address: userAddress,
-      });
+      user = await User.create({ user_address: userAddress })
     }
     const JwtToken = jwt.sign(
       {
@@ -91,71 +83,79 @@ exports.verifyUser = async (req, res, next) => {
       },
       process.env.JWTSECRET,
       { expiresIn: "1d" }
-    );
+    )
 
-    combinedLogger.info(`User authenticated successfully: ${userAddress}`);
+    combinedLogger.info(`User authenticated successfully: ${userAddress}`)
 
-    res.status(200).json({
-      status: "success",
-      token: JwtToken,
-      user: user,
-      walletIsVirgin: walletIsVirgin,
-    });
+    res
+      .status(200)
+      .json({
+        status: "success",
+        token: JwtToken,
+        user: user,
+        walletIsVirgin: walletIsVirgin,
+      })
   } catch (error) {
-    combinedLogger.error(`Authentication error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
-    return next(new AppError(error.message || "Authentication failed", 403));
+    combinedLogger.error(
+      `Authentication error: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return next(new AppError(error.message || "Authentication failed", 403))
   }
-};
+}
 
 exports.seralizeUser = async (req, _res, next) => {
-  const authHeader = req.headers.authorization;
-  const token = authHeader?.split(" ")[1] || null;
+  const authHeader = req.headers.authorization
+  const token = authHeader?.split(" ")[1] || null
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWTSECRET);
+      const decoded = jwt.verify(token, process.env.JWTSECRET)
 
-      const user = await User.findById(decoded.id);
-      req.user = user;
-      next();
+      const user = await User.findById(decoded.id)
+      req.user = user
+      next()
     } catch (err) {
-      req.user = null;
-      return next();
+      req.user = null
+      return next()
     }
   } else {
-    req.user = null;
-    next();
+    req.user = null
+    next()
   }
-};
+}
 
 exports.isLoggedIn = (req, _res, next) => {
   if (req.user) {
-    next();
+    next()
   } else {
-    next(new AppError("UnAuthorized Request", 401));
+    next(new AppError("UnAuthorized Request", 401))
   }
-};
+}
 
 exports.telegramLogin = async (req, res, next) => {
-  const { telegramId } = req.body;
+  const { telegramId } = req.body
   if (!telegramId) {
-    return next(new AppError("Telegram ID is required", 400));
+    return next(new AppError("Telegram ID is required", 400))
   }
   try {
-    const user = await User.findOne({ _id: req.user._id });
+    const user = await User.findOne({ _id: req.user._id })
     if (!user) {
-      return next(new AppError("User not found", 404));
+      return next(new AppError("User not found", 404))
     }
-    user.telegramId = telegramId;
-    await user.save();
-    combinedLogger.info(`Telegram ID linked for user: ${user._id}`);
+    user.telegramId = telegramId
+    await user.save()
+    combinedLogger.info(`Telegram ID linked for user: ${user._id}`)
 
-    res.status(200).json({
-      status: "success",
-      message: "Telegram ID linked successfully",
-      user: user,
-    });
+    res
+      .status(200)
+      .json({
+        status: "success",
+        message: "Telegram ID linked successfully",
+        user: user,
+      })
   } catch (error) {
-    combinedLogger.error(`Error linking Telegram ID: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`);
-    return next(new AppError("Failed to link Telegram ID", 500));
+    combinedLogger.error(
+      `Error linking Telegram ID: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`
+    )
+    return next(new AppError("Failed to link Telegram ID", 500))
   }
-};
+}

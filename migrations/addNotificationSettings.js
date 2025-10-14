@@ -31,11 +31,7 @@ const down = async () => {
   try {
     const res = await User.updateMany(
       {},
-      {
-        $unset: {
-          notificationSettings: "",
-        },
-      }
+      { $unset: { notificationSettings: "" } }
     )
     console.log(
       "migration successful, removed notification settings from User collection"

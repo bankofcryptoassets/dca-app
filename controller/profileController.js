@@ -62,9 +62,11 @@ const updateNotificationSettings = async (req, res) => {
       typeof lackOfFunds !== "boolean" ||
       typeof milestonesAchieved !== "boolean"
     ) {
-      return res.status(400).json({
-        message: "Invalid request body. All fields must be boolean values.",
-      })
+      return res
+        .status(400)
+        .json({
+          message: "Invalid request body. All fields must be boolean values.",
+        })
     }
 
     const user = await User.findById(req.params.id)
@@ -81,10 +83,12 @@ const updateNotificationSettings = async (req, res) => {
 
     await user.save()
 
-    res.status(200).json({
-      message: "Notification settings updated successfully",
-      notificationSettings: user.notificationSettings,
-    })
+    res
+      .status(200)
+      .json({
+        message: "Notification settings updated successfully",
+        notificationSettings: user.notificationSettings,
+      })
   } catch (error) {
     res.status(500).json({ message: "Server error", error })
   }

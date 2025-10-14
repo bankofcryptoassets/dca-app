@@ -16,15 +16,12 @@ const executePayments = async (plan) => {
   combinedLogger.info(
     "executePayments -- starting execute payments cron" + plan
   )
-  const users = await User.find({
-    plan,
-    paused: false,
-  }).catch((err) => {
+  const users = await User.find({ plan, paused: false }).catch((err) => {
     combinedLogger.error(
       "error fetching users for plan: " +
-      plan +
-      " ,error: " +
-      JSON.stringify(err, Object.getOwnPropertyNames(err))
+        plan +
+        " ,error: " +
+        JSON.stringify(err, Object.getOwnPropertyNames(err))
     )
     return
   })
@@ -38,7 +35,7 @@ const executePayments = async (plan) => {
   const executorPvtKey = await getExecutorPrivKey().catch((err) => {
     combinedLogger.error(
       "error fetching executor priv key from secrets manager: " +
-      JSON.stringify(err, Object.getOwnPropertyNames(err))
+        JSON.stringify(err, Object.getOwnPropertyNames(err))
     )
     return
   })
@@ -96,9 +93,7 @@ const executePayments = async (plan) => {
       )
 
       await User.updateOne(
-        {
-          userAddress: user.userAddress,
-        },
+        { userAddress: user.userAddress },
         {
           $set: {
             totalInvested: user.totalInvested
@@ -175,6 +170,4 @@ const executePayments = async (plan) => {
   }
 }
 
-module.exports = {
-  executePayments,
-}
+module.exports = { executePayments }

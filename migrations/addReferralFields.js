@@ -3,16 +3,12 @@ const { combinedLogger } = require("../utils/logger")
 
 const up = async () => {
   try {
-    combinedLogger.info("Starting migration: adding referral fields to User collection")
+    combinedLogger.info(
+      "Starting migration: adding referral fields to User collection"
+    )
     const res = await User.updateMany(
       {},
-      {
-        $set: {
-          referredUsers: [],
-          referredBy: null,
-          referralClicks: 0,
-        },
-      }
+      { $set: { referredUsers: [], referredBy: null, referralClicks: 0 } }
     )
     combinedLogger.info(
       `Migration successful, added referral fields to ${res.modifiedCount} users`
@@ -27,16 +23,12 @@ const up = async () => {
 
 const down = async () => {
   try {
-    combinedLogger.info("Starting rollback: removing referral fields from User collection")
+    combinedLogger.info(
+      "Starting rollback: removing referral fields from User collection"
+    )
     const res = await User.updateMany(
       {},
-      {
-        $unset: {
-          referredUsers: "",
-          referredBy: "",
-          referralClicks: "",
-        },
-      }
+      { $unset: { referredUsers: "", referredBy: "", referralClicks: "" } }
     )
     combinedLogger.info(
       `Rollback successful, removed referral fields from ${res.modifiedCount} users`

@@ -1,7 +1,7 @@
-const { getWalletPortfolio } = require("../controller/portfolio");
+const { getWalletPortfolio } = require("../controller/portfolio")
 
-const router = require("express").Router();
+const router = require("express").Router()
 
-router.get("/portfolio", getWalletPortfolio);
+router.get("/portfolio", getWalletPortfolio)
 
-module.exports = router;
+module.exports = router

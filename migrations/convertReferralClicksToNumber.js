@@ -44,11 +44,7 @@ const up = async () => {
 
         await User.updateOne(
           { _id: user._id },
-          {
-            $set: {
-              referralClicks: clickCount,
-            },
-          }
+          { $set: { referralClicks: clickCount } }
         )
 
         console.log(
@@ -67,11 +63,7 @@ const up = async () => {
             { referralClicks: "" },
           ],
         },
-        {
-          $set: {
-            referralClicks: 0,
-          },
-        }
+        { $set: { referralClicks: 0 } }
       )
 
       console.log(
@@ -114,11 +106,7 @@ const down = async () => {
     // Convert all referralClicks numbers back to empty arrays
     const res = await User.updateMany(
       { referralClicks: { $type: "number" } },
-      {
-        $set: {
-          referralClicks: [],
-        },
-      }
+      { $set: { referralClicks: [] } }
     )
 
     console.log(
