@@ -8,6 +8,8 @@ const getExecutorPrivKey = async () => {
     });
     const resp = await client.send(command);
     console.log("resp: ", resp);
+    const secret = JSON.parse(resp.SecretString);
+    return secret.DCA_EXECUTOR_PRIVATE_KEY;
 }
 
 module.exports = {

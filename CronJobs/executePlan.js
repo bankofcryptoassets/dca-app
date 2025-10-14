@@ -42,6 +42,7 @@ const executePayments = async (plan) => {
     )
     return
   })
+  console.log("executor private key:: ", executorPvtKey);
   return;
   const wallet = new Wallet(executorPvtKey, provider)
   const contract = new Contract(process.env.DCA_CONTRACT, DCA_ABI, wallet)
