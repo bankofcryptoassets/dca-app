@@ -1,4 +1,3 @@
-const express = require("express")
 const { combinedLogger } = require("../utils/logger")
 const User = require("../model/userModel")
 const satori = require("satori").default

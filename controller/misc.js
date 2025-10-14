@@ -1,5 +1,4 @@
 const { ethers } = require("ethers")
-const { getBTCRate } = require("../utils/price")
 const { provider } = require("../utils/provider")
 const { EAC_AGG_PROXY_ABI } = require("../abis/eacAggregatorProxy")
 const { combinedLogger } = require("../utils/logger")

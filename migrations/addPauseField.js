@@ -35,4 +35,4 @@ const down = async () => {
   }
 }
 
-// up();
+module.exports = { up, down }

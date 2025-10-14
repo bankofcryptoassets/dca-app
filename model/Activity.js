@@ -2,6 +2,7 @@
 const mongoose = require("mongoose")
 const { Schema } = mongoose
 
+// eslint-disable-next-line no-unused-vars
 const ActivitySchema = new Schema({
   user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   action: { type: String, enum: ["CREATE-PLAN", "PAYMENT"], required: true },

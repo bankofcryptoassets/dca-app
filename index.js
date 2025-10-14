@@ -2,8 +2,6 @@ const express = require("express")
 const bodyParser = require("body-parser")
 const cors = require("cors")
 const cron = require("node-cron")
-const path = require("path")
-
 const db = require("./utils/db")
 const { combinedLogger } = require("./utils/logger")
 const planRoutes = require("./routes/planRoute")

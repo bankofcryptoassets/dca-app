@@ -70,4 +70,4 @@ const down = async () => {
   }
 }
 
-// module.exports = { up, down }
+module.exports = { up, down }

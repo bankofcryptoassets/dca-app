@@ -52,6 +52,9 @@ const recordDustSweepTransaction = async (req, res) => {
 
     await dustSweepRecord.save()
 
+    combinedLogger.info(
+      `Dust sweep transaction recorded for user: ${userAddress}, tx: ${transactionHash}`
+    )
     return res
       .status(201)
       .json({
@@ -59,10 +62,6 @@ const recordDustSweepTransaction = async (req, res) => {
         message: "Dust sweep transaction recorded successfully",
         data: dustSweepRecord,
       })
-
-    combinedLogger.info(
-      `Dust sweep transaction recorded for user: ${userAddress}, tx: ${transactionHash}`
-    )
   } catch (error) {
     combinedLogger.error(
       `Error in recordDustSweepTransaction: ${JSON.stringify(error, Object.getOwnPropertyNames(error))}`

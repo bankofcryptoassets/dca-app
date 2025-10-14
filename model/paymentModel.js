@@ -1,5 +1,6 @@
 const mongoose = require("mongoose")
 
+// eslint-disable-next-line no-unused-vars
 const paymentSchema = new mongoose.Schema({
   user: { type: mongoose.Types.ObjectId, ref: "User", required: true },
   userAddress: { type: String, required: true },

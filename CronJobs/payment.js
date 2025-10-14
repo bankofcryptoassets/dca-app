@@ -1,5 +1,4 @@
 const Plan = require("../model/planModel")
-const Payment = require("../model/paymentModel")
 const { combinedLogger } = require("../utils/logger")
 
 // Replace with actual ethers/web3 contract instance

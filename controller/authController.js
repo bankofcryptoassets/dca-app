@@ -1,3 +1,4 @@
+/* eslint-disable */ // remove this line when using this file
 const jwt = require("jsonwebtoken")
 const dotenv = require("dotenv")
 const AppError = require("../utils/appError")

@@ -467,7 +467,7 @@ const getLeaderboard = async (req, res) => {
     // Get users with referral data, sorted by referral count
     const users = await User.find({
       referralId: { $exists: true, $ne: null },
-      referredUsers: { $exists: true, $ne: null, $ne: [] },
+      referredUsers: { $exists: true, $nin: [null, []] },
     })
       .sort({ referredUsers: -1 })
       .limit(parseInt(limit))

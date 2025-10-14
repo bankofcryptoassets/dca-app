@@ -142,7 +142,10 @@ async function getUserNotifications(req, res) {
 
     return res.status(200).json({ success: true, data: userNotification })
   } catch (error) {
-    console.error("Get user notifications error:", error)
+    combinedLogger.error(
+      "Get user notifications error: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
     return res.status(500).json({ success: false, error: error.message })
   }
 }
@@ -225,7 +228,10 @@ async function updateUserNotifications(req, res) {
         data: updatedUserNotification,
       })
   } catch (error) {
-    console.error("Update user notifications error:", error)
+    combinedLogger.error(
+      "Update user notifications error: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
     return res.status(500).json({ success: false, error: error.message })
   }
 }
@@ -292,7 +298,7 @@ async function sendNotification(req, res) {
     }
 
     // Create notification log
-    const notificationLog = await NotificationLog.create({
+    await NotificationLog.create({
       notificationId,
       title,
       body,

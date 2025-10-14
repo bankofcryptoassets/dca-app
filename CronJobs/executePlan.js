@@ -6,7 +6,6 @@ const { generateSwapCalldata } = require("../utils/generateSwapCalldata")
 const {
   sendPurchaseConfirmationNotification,
   sendLackOfFundsNotification,
-  sendMilestoneAchievedNotification,
 } = require("../utils/notificationUtils")
 const { combinedLogger } = require("../utils/logger")
 const { getExecutorPrivKey } = require("../aws/secretsManager")
@@ -62,7 +61,7 @@ const executePayments = async (plan) => {
         "executePayments -- calldata: " +
           JSON.stringify(calldata, Object.getOwnPropertyNames(calldata))
       )
-      console.log(
+      combinedLogger.info(
         "executePayments -- amount: " +
           ethers.utils.parseUnits(user.amount.toString(), 6).toString()
       )
@@ -106,9 +105,9 @@ const executePayments = async (plan) => {
       )
 
       // Calculate new total invested amount
-      const newTotalInvested = user.totalInvested
-        ? user.totalInvested + user.amount
-        : user.amount
+      // const newTotalInvested = user.totalInvested
+      //   ? user.totalInvested + user.amount
+      //   : user.amount
 
       /** NOTIFICATIONS */
       // Send purchase confirmation notification
@@ -144,24 +143,24 @@ const executePayments = async (plan) => {
       //   }
       // } catch {}
     } catch (error) {
-      combinedLogger.info(
+      combinedLogger.error(
         "executePayments -- plan execution failed for wallet: " +
           user.userAddress
+      )
+      combinedLogger.error(
+        "executePayments -- error: " +
+          JSON.stringify(error, Object.getOwnPropertyNames(error))
       )
 
       // Check if it's an insufficient funds error and send notification
       const errorMessage = error.message || error.toString()
-      combinedLogger.info(
-        "executePayments -- error: " +
-          JSON.stringify(error, Object.getOwnPropertyNames(error))
-      )
       if (
         errorMessage.toLowerCase().includes("insufficient") ||
         errorMessage.toLowerCase().includes("funds") ||
         errorMessage.toLowerCase().includes("balance")
       ) {
         try {
-          await sendLackOfFundsNotification(user.userAddress, user.amount)
+          await sendLackOfFundsNotification(user.userAddress)
         } catch {}
       }
     }
