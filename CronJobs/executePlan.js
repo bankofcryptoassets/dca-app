@@ -9,6 +9,7 @@ const {
   sendMilestoneAchievedNotification,
 } = require("../utils/notificationUtils")
 const { combinedLogger } = require("../utils/logger")
+const { getExecutorPrivKey } = require("../aws/secretsManager")
 
 const executePayments = async (plan) => {
   // get all users.
@@ -18,6 +19,14 @@ const executePayments = async (plan) => {
   const users = await User.find({
     plan,
     paused: false,
+  }).catch((err) => {
+    combinedLogger.error(
+      "error fetching users for plan: " +
+      plan +
+      " ,error: " +
+      JSON.stringify(err, Object.getOwnPropertyNames(err))
+    )
+    return
   })
   combinedLogger.info(
     "executePayments -- users: " +
@@ -25,7 +34,16 @@ const executePayments = async (plan) => {
   )
 
   const provider = new ethers.providers.JsonRpcProvider(process.env.RPC)
-  const wallet = new Wallet(process.env.EXECUTOR, provider)
+  const executorPvtKey = await getExecutorPrivKey().catch((err) => {
+    combinedLogger.error(
+      "error fetching executor priv key from secrets manager: " +
+      ""
+      // JSON.stringify(err, Object.getOwnPropertyNames(err))
+    )
+    return
+  })
+  return;
+  const wallet = new Wallet(executorPvtKey, provider)
   const contract = new Contract(process.env.DCA_CONTRACT, DCA_ABI, wallet)
   for (const user of users) {
     try {
