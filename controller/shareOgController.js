@@ -1,5 +1,6 @@
 const { combinedLogger } = require("../utils/logger")
 const User = require("../model/userModel")
+const { Resvg } = require("@resvg/resvg-js")
 const satori = require("satori").default
 const html = (...args) =>
   import("satori-html").then(({ html }) => html(...args))
@@ -20,7 +21,7 @@ const getShareOG = async (req, res) => {
 
     const currentDay = user.payments.length || 1
     const totalDays = 400 // mock total days as it doesn't matter for the OG image
-    const username = user.username
+    const username = user.username || user.userAddress?.slice(0, 7)
 
     combinedLogger.info(
       "getShareOG -- Generating OG image for user: " + referralId
@@ -133,10 +134,15 @@ const getShareOG = async (req, res) => {
       ],
     })
 
+    // convert svg to png
+    const resvg = new Resvg(svg)
+    const pngData = resvg.render()
+    const png = pngData.asPng()
+
     // Set headers for image response
-    res.setHeader("Content-Type", "image/svg+xml")
     res.setHeader("Cache-Control", "public, max-age=3600") // Cache for 1 hour
-    res.send(svg)
+    res.setHeader("Content-Type", "image/png")
+    res.send(png)
   } catch (error) {
     combinedLogger.error(
       "getShareOG -- Error generating OG image: " +
