@@ -35,7 +35,6 @@ const dustSweepSchema = new mongoose.Schema(
 
 // Index for efficient queries
 dustSweepSchema.index({ userAddress: 1, timestamp: -1 })
-dustSweepSchema.index({ transactionHash: 1 })
 
 const DustSweep = mongoose.model("DustSweep", dustSweepSchema)
 

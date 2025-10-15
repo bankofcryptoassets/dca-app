@@ -20,6 +20,7 @@
     "@uniswap/sdk-core": "^7.7.2",
     "@uniswap/smart-order-router": "^4.22.20",
     "axios": "^1.11.0",
+    "big.js": "^7.0.1",
     "body-parser": "^2.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",

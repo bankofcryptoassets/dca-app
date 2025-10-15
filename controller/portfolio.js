@@ -1,6 +1,7 @@
 const { isAddress } = require("viem")
 const { get } = require("../utils/axios")
 const { combinedLogger } = require("../utils/logger")
+const { CONTRACT_ADDRESSES } = require("../utils/constants")
 
 const filterDustSweepableBalances = (portfolioData) => {
   // Logic to flag dust sweepable balances set true when usd equivalent is less than threshold
@@ -14,7 +15,9 @@ const filterDustSweepableBalances = (portfolioData) => {
       .map((asset) => {
         if (
           asset.estimated_balance &&
-          asset.estimated_balance < Number(process.env.DUST_SWEEP_THRESHOLD)
+          asset.estimated_balance < Number(process.env.DUST_SWEEP_THRESHOLD) &&
+          asset.contracts_balances?.[0]?.address !== CONTRACT_ADDRESSES.ETH &&
+          asset.contracts_balances?.[0]?.address !== CONTRACT_ADDRESSES.USDC
         ) {
           asset.flagDustSweep = true
           dustSweepableBalance += asset.estimated_balance

@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     targetAmount: { type: Number, required: true },
     totalInvested: { type: Number, default: 0 },
+    totalInvestedSats: { type: String, default: 0 }, // Total cBBTC (in sats) invested (sum of cbbtcRaw from all payments)
     planCreated: { type: Date, required: true },
     paused: { type: Boolean, required: true, default: false },
     lastPaid: { type: Date, required: false },

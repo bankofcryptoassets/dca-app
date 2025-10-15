@@ -31,7 +31,7 @@ const generateSwapCalldata = async (
   if (!route || !route.methodParameters) {
     combinedLogger.error(
       "generateSwapCalldata -- route: " +
-        JSON.stringify(route, Object.getOwnPropertyNames(route))
+        (route && JSON.stringify(route, Object.getOwnPropertyNames(route)))
     )
     throw new Error("No route loaded")
   }

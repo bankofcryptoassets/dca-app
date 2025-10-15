@@ -1,4 +1,5 @@
 const User = require("../model/userModel")
+const Payments = require("../model/paymentsModel")
 const { Wallet, ethers, Contract } = require("ethers")
 const { DCA_ABI } = require("../abis/dca")
 const { amplify } = require("../utils/math")
@@ -9,6 +10,9 @@ const {
 } = require("../utils/notificationUtils")
 const { combinedLogger } = require("../utils/logger")
 const { getExecutorPrivKey } = require("../aws/secretsManager")
+const { getTransactionDetails } = require("../utils/getTransactionDetails")
+const { UNISWAPV3_SWAP_ABI } = require("../abis/uniswapv3Swap")
+const Big = require("big.js")
 
 const executePayments = async (plan) => {
   // get all users.
@@ -30,6 +34,7 @@ const executePayments = async (plan) => {
   )
 
   const provider = new ethers.providers.JsonRpcProvider(process.env.RPC)
+  const swapContractInterface = new ethers.utils.Interface(UNISWAPV3_SWAP_ABI)
   // fetch private key from AWS.
   const executorPvtKey = await getExecutorPrivKey().catch((err) => {
     combinedLogger.error(
@@ -91,35 +96,90 @@ const executePayments = async (plan) => {
           JSON.stringify(receipt, Object.getOwnPropertyNames(receipt))
       )
 
-      await User.updateOne(
-        { userAddress: user.userAddress },
-        {
-          $set: {
-            totalInvested: user.totalInvested
-              ? user.totalInvested + user.amount
-              : user.amount,
-            lastPaid: Date.now(),
-            payments: [...user.payments, receipt.transactionHash],
-          },
+      // get tx details and store in db
+      const txDetails = getTransactionDetails(receipt, swapContractInterface)
+      let newTotalInvestedSats = null
+
+      if (txDetails) {
+        try {
+          // Store payment details in Payments collection
+          const paymentDetail = new Payments({
+            user: user._id,
+            transactionHash: receipt.transactionHash,
+            usdcAmount: txDetails.usdcAmount,
+            cbbtcAmount: txDetails.cbbtcAmount,
+            usdcRaw: txDetails.usdcRaw,
+            cbbtcRaw: txDetails.cbbtcRaw,
+            price: txDetails.price,
+            sqrtPriceX96: txDetails.sqrtPriceX96,
+            blockNumber: receipt.blockNumber,
+            gasUsed: receipt.gasUsed.toString(),
+            gasPrice: receipt.effectiveGasPrice?.toString() || "0",
+            planType: user.plan,
+            planAmount: user.amount,
+            status: "completed",
+            executedAt: new Date(),
+          })
+
+          await paymentDetail.save()
+        } catch (error) {
+          combinedLogger.error(
+            "executePayments -- error storing payment details in Payments collection: " +
+              JSON.stringify(error, Object.getOwnPropertyNames(error))
+          )
         }
+        // Calculate new totalInvestedSats
+        newTotalInvestedSats = user.totalInvestedSats
+          ? new Big(user.totalInvestedSats).add(txDetails.cbbtcRaw).toString()
+          : txDetails.cbbtcRaw
+
+        await User.updateOne(
+          { userAddress: user.userAddress },
+          {
+            $set: {
+              totalInvested: user.totalInvested
+                ? user.totalInvested + user.amount
+                : user.amount,
+              totalInvestedSats: newTotalInvestedSats,
+              lastPaid: Date.now(),
+              payments: [...user.payments, receipt.transactionHash],
+            },
+          }
+        )
+      } else {
+        combinedLogger.error(
+          "executePayments -- Failed to get transaction details for: " +
+            receipt.transactionHash
+        )
+
+        // Still update user with basic info even if tx details failed
+        await User.updateOne(
+          { userAddress: user.userAddress },
+          {
+            $set: {
+              totalInvested: user.totalInvested
+                ? user.totalInvested + user.amount
+                : user.amount,
+              lastPaid: Date.now(),
+              payments: [...user.payments, receipt.transactionHash],
+            },
+          }
+        )
+      }
+
+      /** NOTIFICATIONS */
+      // Send purchase confirmation notification
+      sendPurchaseConfirmationNotification(
+        user.userAddress,
+        txDetails?.cbbtcRaw || 0,
+        newTotalInvestedSats || 0
       )
 
+      // TODO: Check for milestone achievements (1%, 2%, 3%, 4%, 5%.........95%, 96%, 97%, 98%, 99%, 100%)
       // Calculate new total invested amount
       // const newTotalInvested = user.totalInvested
       //   ? user.totalInvested + user.amount
       //   : user.amount
-
-      /** NOTIFICATIONS */
-      // Send purchase confirmation notification
-      try {
-        await sendPurchaseConfirmationNotification(
-          user.userAddress,
-          user.amount
-        )
-      } catch {}
-
-      // TODO: Check for milestone achievements (25%, 50%, 75%, 100%)
-      // try {
       //   const milestonePercentages = [25, 50, 75, 100]
       //   const targetAmount = user.targetAmount
       //   const progressPercentage = (newTotalInvested / targetAmount) * 100
@@ -134,14 +194,13 @@ const executePayments = async (plan) => {
       //       previousProgressPercentage < milestone &&
       //       progressPercentage >= milestone
       //     ) {
-      //       await sendMilestoneAchievedNotification(
+      //       sendMilestoneAchievedNotification(
       //         user.userAddress,
       //         milestone,
       //         newTotalInvested
       //       )
       //     }
       //   }
-      // } catch {}
     } catch (error) {
       combinedLogger.error(
         "executePayments -- plan execution failed for wallet: " +
@@ -159,9 +218,7 @@ const executePayments = async (plan) => {
         errorMessage.toLowerCase().includes("funds") ||
         errorMessage.toLowerCase().includes("balance")
       ) {
-        try {
-          await sendLackOfFundsNotification(user.userAddress)
-        } catch {}
+        sendLackOfFundsNotification(user.userAddress)
       }
     }
 
