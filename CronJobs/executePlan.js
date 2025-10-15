@@ -9,6 +9,8 @@ const {
 } = require("../utils/notificationUtils")
 const { combinedLogger } = require("../utils/logger")
 const { getExecutorPrivKey } = require("../aws/secretsManager")
+const { getTransactionDetails } = require("../utils/getTransactionDetails")
+const { UNISWAPV3_SWAP_ABI } = require("../abis/uniswapv3Swap")
 
 const executePayments = async (plan) => {
   // get all users.
@@ -30,6 +32,7 @@ const executePayments = async (plan) => {
   )
 
   const provider = new ethers.providers.JsonRpcProvider(process.env.RPC)
+  const swapContractInterface = new ethers.utils.Interface(UNISWAPV3_SWAP_ABI)
   // fetch private key from AWS.
   const executorPvtKey = await getExecutorPrivKey().catch((err) => {
     combinedLogger.error(
@@ -91,6 +94,10 @@ const executePayments = async (plan) => {
           JSON.stringify(receipt, Object.getOwnPropertyNames(receipt))
       )
 
+      // get tx details and store in db
+      const txDetails = getTransactionDetails(receipt, swapContractInterface)
+      // TODO: store tx details in db
+
       await User.updateOne(
         { userAddress: user.userAddress },
         {
@@ -104,22 +111,15 @@ const executePayments = async (plan) => {
         }
       )
 
+      /** NOTIFICATIONS */
+      // Send purchase confirmation notification
+      sendPurchaseConfirmationNotification(user.userAddress, txDetails.cbbtcRaw)
+
+      // TODO: Check for milestone achievements (1%, 2%, 3%, 4%, 5%.........95%, 96%, 97%, 98%, 99%, 100%)
       // Calculate new total invested amount
       // const newTotalInvested = user.totalInvested
       //   ? user.totalInvested + user.amount
       //   : user.amount
-
-      /** NOTIFICATIONS */
-      // Send purchase confirmation notification
-      try {
-        await sendPurchaseConfirmationNotification(
-          user.userAddress,
-          user.amount
-        )
-      } catch {}
-
-      // TODO: Check for milestone achievements (25%, 50%, 75%, 100%)
-      // try {
       //   const milestonePercentages = [25, 50, 75, 100]
       //   const targetAmount = user.targetAmount
       //   const progressPercentage = (newTotalInvested / targetAmount) * 100
@@ -134,14 +134,13 @@ const executePayments = async (plan) => {
       //       previousProgressPercentage < milestone &&
       //       progressPercentage >= milestone
       //     ) {
-      //       await sendMilestoneAchievedNotification(
+      //       sendMilestoneAchievedNotification(
       //         user.userAddress,
       //         milestone,
       //         newTotalInvested
       //       )
       //     }
       //   }
-      // } catch {}
     } catch (error) {
       combinedLogger.error(
         "executePayments -- plan execution failed for wallet: " +
@@ -159,9 +158,7 @@ const executePayments = async (plan) => {
         errorMessage.toLowerCase().includes("funds") ||
         errorMessage.toLowerCase().includes("balance")
       ) {
-        try {
-          await sendLackOfFundsNotification(user.userAddress)
-        } catch {}
+        sendLackOfFundsNotification(user.userAddress)
       }
     }
 

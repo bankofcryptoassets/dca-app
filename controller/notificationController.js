@@ -178,11 +178,11 @@ async function updateUserNotifications(req, res) {
       fid: parseInt(fid),
     })
 
-    if (!userNotification) {
-      return res
-        .status(404)
-        .json({ success: false, error: "User notification not found" })
-    }
+    // if (!userNotification) {
+    //   return res
+    //     .status(404)
+    //     .json({ success: false, error: "User notification not found" })
+    // }
 
     const updateData = {}
 
@@ -217,7 +217,10 @@ async function updateUserNotifications(req, res) {
     const updatedUserNotification = await UserNotification.findOneAndUpdate(
       { fid: parseInt(fid) },
       { $set: updateData },
-      { new: true }
+      {
+        new: true,
+        upsert: true, // create user notification if not found
+      }
     )
 
     return res

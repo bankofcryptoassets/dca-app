@@ -3,6 +3,7 @@ const UserNotification = require("../model/userNotificationModel")
 const NotificationLog = require("../model/notificationLogModel")
 const crypto = require("crypto")
 const { combinedLogger } = require("./logger")
+const { NOTIFICATION_BASE_URL } = require("./constants")
 
 /**
  * Check if a user can receive notifications based on their settings and notification token
@@ -239,22 +240,35 @@ async function sendNotificationToUser(
 /**
  * Send purchase confirmation notification
  * @param {string} userAddress - The user's wallet address
- * @param {number} amount - The amount purchased
- * @param {string} txHash - Transaction hash
+ * @param {number} satsAdded - The amount added today
+ * @param {number} stackTotalSats - The total amount stacked so far
  * @returns {Promise<{success: boolean, notificationId?: string, error?: string}>}
  */
-async function sendPurchaseConfirmationNotification(userAddress, amount) {
-  const title = "DCA Purchase Confirmed"
-  const body = `Successfully purchased $${amount} worth of BTC`
-  const targetUrl = "https://dca.bitmor.xyz/"
+async function sendPurchaseConfirmationNotification(
+  userAddress,
+  satsAdded
+  // stackTotalSats
+) {
+  try {
+    const title = "Daily Buy Completed"
+    const body = `You stacked ${satsAdded} sats today. Keep it going!`
+    // const body = `You stacked ${satsAdded} sats today. Total: ${stackTotalSats} sats. Keep it going!`
+    const targetUrl = NOTIFICATION_BASE_URL
 
-  return await sendNotificationToUser(
-    userAddress,
-    title,
-    body,
-    targetUrl,
-    "purchaseConfirmations"
-  )
+    return await sendNotificationToUser(
+      userAddress,
+      title,
+      body,
+      targetUrl,
+      "purchaseConfirmations"
+    )
+  } catch (error) {
+    combinedLogger.error(
+      "sendPurchaseConfirmationNotification -- Error sending purchase confirmation notification: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
+    return { success: false, error: error.message }
+  }
 }
 
 /**
@@ -263,42 +277,58 @@ async function sendPurchaseConfirmationNotification(userAddress, amount) {
  * @returns {Promise<{success: boolean, notificationId?: string, error?: string}>}
  */
 async function sendLackOfFundsNotification(userAddress) {
-  const title = "Insufficient Funds"
-  const body = `Please fund your wallet to continue your DCA plan`
-  const targetUrl = "https://dca.bitmor.xyz/" // Link to add funds or settings
+  try {
+    const title = "Low USDC balance"
+    const body = `Buys are paused. Top up your USDC balance to resume auto-stacking.`
+    const targetUrl = NOTIFICATION_BASE_URL // Link to add funds or settings
 
-  return await sendNotificationToUser(
-    userAddress,
-    title,
-    body,
-    targetUrl,
-    "lackOfFunds"
-  )
+    return await sendNotificationToUser(
+      userAddress,
+      title,
+      body,
+      targetUrl,
+      "lackOfFunds"
+    )
+  } catch (error) {
+    combinedLogger.error(
+      "sendLackOfFundsNotification -- Error sending lack of funds notification: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
+    return { success: false, error: error.message }
+  }
 }
 
 /**
  * Send milestone achieved notification
  * @param {string} userAddress - The user's wallet address
- * @param {number} milestoneAmount - The milestone amount reached
- * @param {number} totalInvested - Total amount invested so far
+ * @param {number} milestonePercentage - The milestone amount reached
+ * @param {number} totalInvestedSats - Total amount invested so far
  * @returns {Promise<{success: boolean, notificationId?: string, error?: string}>}
  */
 async function sendMilestoneAchievedNotification(
   userAddress,
-  milestoneAmount,
-  totalInvested
+  milestonePercentage,
+  totalInvestedSats
 ) {
-  const title = "Milestone Achieved! 🎉"
-  const body = `You've invested $${totalInvested} (${milestoneAmount}% of target)`
-  const targetUrl = "https://dca.bitmor.xyz/" // Link to portfolio or stats
+  try {
+    const title = "Milestone unlocked"
+    const body = `You’ve reached ${milestonePercentage}% of your goal! Current stack: ${totalInvestedSats} sats.`
+    const targetUrl = NOTIFICATION_BASE_URL // Link to portfolio or stats
 
-  return await sendNotificationToUser(
-    userAddress,
-    title,
-    body,
-    targetUrl,
-    "milestonesAchieved"
-  )
+    return await sendNotificationToUser(
+      userAddress,
+      title,
+      body,
+      targetUrl,
+      "milestonesAchieved"
+    )
+  } catch (error) {
+    combinedLogger.error(
+      "sendMilestoneAchievedNotification -- Error sending milestone achieved notification: " +
+        JSON.stringify(error, Object.getOwnPropertyNames(error))
+    )
+    return { success: false, error: error.message }
+  }
 }
 
 module.exports = {
