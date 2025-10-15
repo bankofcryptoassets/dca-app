@@ -1,5 +1,5 @@
 const { isAddress } = require("viem")
-const Payment = require("../model/paymentModel")
+const Payments = require("../model/paymentsModel")
 const Plan = require("../model/planModel")
 const User = require("../model/userModel")
 const { getBTCRate } = require("../utils/price")
@@ -34,12 +34,12 @@ const getPayments = async (req, res) => {
   try {
     let payment
 
-    payment = payment = await Payment.findOne({
+    payment = payment = await Payments.findOne({
       paymentId: req.param.id,
     }).populate("user")
 
     if (!payment) {
-      payment = await Payment.findById(req.param.id).populate("user")
+      payment = await Payments.findById(req.param.id).populate("user")
     }
 
     res.status(200).json({ payment })

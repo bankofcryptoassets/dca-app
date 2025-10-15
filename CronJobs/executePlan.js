@@ -1,4 +1,5 @@
 const User = require("../model/userModel")
+const Payments = require("../model/paymentsModel")
 const { Wallet, ethers, Contract } = require("ethers")
 const { DCA_ABI } = require("../abis/dca")
 const { amplify } = require("../utils/math")
@@ -11,6 +12,7 @@ const { combinedLogger } = require("../utils/logger")
 const { getExecutorPrivKey } = require("../aws/secretsManager")
 const { getTransactionDetails } = require("../utils/getTransactionDetails")
 const { UNISWAPV3_SWAP_ABI } = require("../abis/uniswapv3Swap")
+const Big = require("big.js")
 
 const executePayments = async (plan) => {
   // get all users.
@@ -96,24 +98,82 @@ const executePayments = async (plan) => {
 
       // get tx details and store in db
       const txDetails = getTransactionDetails(receipt, swapContractInterface)
-      // TODO: store tx details in db
+      let newTotalInvestedSats = null
 
-      await User.updateOne(
-        { userAddress: user.userAddress },
-        {
-          $set: {
-            totalInvested: user.totalInvested
-              ? user.totalInvested + user.amount
-              : user.amount,
-            lastPaid: Date.now(),
-            payments: [...user.payments, receipt.transactionHash],
-          },
+      if (txDetails) {
+        try {
+          // Store payment details in Payments collection
+          const paymentDetail = new Payments({
+            user: user._id,
+            transactionHash: receipt.transactionHash,
+            usdcAmount: txDetails.usdcAmount,
+            cbbtcAmount: txDetails.cbbtcAmount,
+            usdcRaw: txDetails.usdcRaw,
+            cbbtcRaw: txDetails.cbbtcRaw,
+            price: txDetails.price,
+            sqrtPriceX96: txDetails.sqrtPriceX96,
+            blockNumber: receipt.blockNumber,
+            gasUsed: receipt.gasUsed.toString(),
+            gasPrice: receipt.effectiveGasPrice?.toString() || "0",
+            planType: user.plan,
+            planAmount: user.amount,
+            status: "completed",
+            executedAt: new Date(),
+          })
+
+          await paymentDetail.save()
+        } catch (error) {
+          combinedLogger.error(
+            "executePayments -- error storing payment details in Payments collection: " +
+              JSON.stringify(error, Object.getOwnPropertyNames(error))
+          )
         }
-      )
+        // Calculate new totalInvestedSats
+        newTotalInvestedSats = user.totalInvestedSats
+          ? new Big(user.totalInvestedSats).add(txDetails.cbbtcRaw).toString()
+          : txDetails.cbbtcRaw
+
+        await User.updateOne(
+          { userAddress: user.userAddress },
+          {
+            $set: {
+              totalInvested: user.totalInvested
+                ? user.totalInvested + user.amount
+                : user.amount,
+              totalInvestedSats: newTotalInvestedSats,
+              lastPaid: Date.now(),
+              payments: [...user.payments, receipt.transactionHash],
+            },
+          }
+        )
+      } else {
+        combinedLogger.error(
+          "executePayments -- Failed to get transaction details for: " +
+            receipt.transactionHash
+        )
+
+        // Still update user with basic info even if tx details failed
+        await User.updateOne(
+          { userAddress: user.userAddress },
+          {
+            $set: {
+              totalInvested: user.totalInvested
+                ? user.totalInvested + user.amount
+                : user.amount,
+              lastPaid: Date.now(),
+              payments: [...user.payments, receipt.transactionHash],
+            },
+          }
+        )
+      }
 
       /** NOTIFICATIONS */
       // Send purchase confirmation notification
-      sendPurchaseConfirmationNotification(user.userAddress, txDetails.cbbtcRaw)
+      sendPurchaseConfirmationNotification(
+        user.userAddress,
+        txDetails?.cbbtcRaw || 0,
+        newTotalInvestedSats || 0
+      )
 
       // TODO: Check for milestone achievements (1%, 2%, 3%, 4%, 5%.........95%, 96%, 97%, 98%, 99%, 100%)
       // Calculate new total invested amount

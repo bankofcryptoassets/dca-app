@@ -19,13 +19,11 @@ const userSchema = new mongoose.Schema(
     amount: { type: Number, required: true },
     targetAmount: { type: Number, required: true },
     totalInvested: { type: Number, default: 0 },
+    totalInvestedSats: { type: String, default: 0 }, // Total cBBTC (in sats) invested (sum of cbbtcRaw from all payments)
     planCreated: { type: Date, required: true },
     paused: { type: Boolean, required: true, default: false },
     lastPaid: { type: Date, required: false },
     payments: { type: [String] }, // will contain tx hashes
-    // TODO: PAYMENT DETAILS
-    // payment details model with one to one relation with user
-    // totalInvestedSats
 
     // Referral system fields
     referralId: { type: String, unique: true, required: true }, // Unique referral ID generated from userAddress

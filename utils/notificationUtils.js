@@ -246,12 +246,12 @@ async function sendNotificationToUser(
  */
 async function sendPurchaseConfirmationNotification(
   userAddress,
-  satsAdded
-  // stackTotalSats
+  satsAdded,
+  stackTotalSats
 ) {
   try {
     const title = "Daily Buy Completed"
-    const body = `You stacked ${satsAdded} sats today. Keep it going!`
+    const body = `You stacked ${satsAdded} sats today. Total: ${stackTotalSats} sats. Keep it going!`
     // const body = `You stacked ${satsAdded} sats today. Total: ${stackTotalSats} sats. Keep it going!`
     const targetUrl = NOTIFICATION_BASE_URL
 

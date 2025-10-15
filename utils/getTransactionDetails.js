@@ -3,6 +3,7 @@ const { combinedLogger } = require("./logger")
 const {
   calculatePriceFromSqrtPriceX96,
 } = require("./calculatePriceFromSqrtPriceX96")
+const { ethers } = require("ethers")
 
 /**
  * Get transaction details
@@ -49,10 +50,10 @@ const getTransactionDetails = (receipt, swapContractInterface) => {
         sqrtPriceX96 = arg
       }
       if (input.name === "amount0") {
-        amount0 = arg
+        amount0 = arg?.abs()
       }
       if (input.name === "amount1") {
-        amount1 = arg
+        amount1 = arg?.abs()
       }
     })
 
@@ -65,8 +66,10 @@ const getTransactionDetails = (receipt, swapContractInterface) => {
       transactionHash,
       price,
       usdcRaw: amount0.toString(),
-      cbbtcRaw: amount1.abs().toString(),
+      cbbtcRaw: amount1.toString(),
       sqrtPriceX96: sqrtPriceX96.toString(),
+      usdcAmount: ethers.utils.formatUnits(amount0, 6),
+      cbbtcAmount: ethers.utils.formatUnits(amount1, 8),
     }
   } catch (error) {
     combinedLogger.error(
