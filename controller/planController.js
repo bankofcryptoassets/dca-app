@@ -1,5 +1,4 @@
 const { isAddress } = require("viem")
-const Payments = require("../model/paymentsModel")
 const Plan = require("../model/planModel")
 const User = require("../model/userModel")
 const { getBTCRate } = require("../utils/price")
@@ -28,24 +27,6 @@ const getPlan = async (req, res) => {
   }
 
   res.status(200).json({ plan })
-}
-
-const getPayments = async (req, res) => {
-  try {
-    let payment
-
-    payment = payment = await Payments.findOne({
-      paymentId: req.param.id,
-    }).populate("user")
-
-    if (!payment) {
-      payment = await Payments.findById(req.param.id).populate("user")
-    }
-
-    res.status(200).json({ payment })
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error })
-  }
 }
 
 const createPlan = async (req, res) => {
@@ -513,7 +494,6 @@ const getLeaderboard = async (req, res) => {
 module.exports = {
   planSummary,
   getPlan,
-  getPayments,
   createPlan,
   getUser,
   pausePlan,
