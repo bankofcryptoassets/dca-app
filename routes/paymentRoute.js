@@ -1,8 +1,13 @@
 // Get Payment
 
-const { getPayments } = require("../controller/planController")
+const {
+  getPaymentById,
+  getPaymentsByUserId,
+} = require("../controller/paymentController")
+
 const router = require("express").Router()
 
-router.get("/:id", getPayments)
+router.get("/:id", getPaymentById)
+router.get("/user/:userId", getPaymentsByUserId)
 
 module.exports = router
