@@ -61,7 +61,7 @@ exports.googleAuthCallback = async (req, res) => {
     try {
       const existingUser = await Waitlist.findOne({ email: userInfo.email })
       if (!existingUser) {
-        let nanoid = await import("nanoid");
+        let {nanoid} = await import("nanoid");
         const accessToken = nanoid() // Generate a unique access token
         const newWaitlistEntry = await Waitlist.create({
           email: userInfo.email,
