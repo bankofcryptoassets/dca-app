@@ -9,6 +9,6 @@ const WaitlistSchema = new mongoose.Schema({
   earlyAdopter: { type: Boolean, default: true },
 })
 
-const Waitlist = mongoose.model("Waitlist", WaitlistSchema)
+const Waitlist = mongoose.model("Waitlist", WaitlistSchema, 'waitlist')
 
 module.exports = Waitlist
